@@ -1,53 +1,62 @@
 # 📊 Advanced Trading Journal & Portfolio Tracker
 
-A premium, production-ready trading journal application built with **Next.js 14**, **TypeScript**, **Supabase**, and **Tailwind CSS**. Features automated fee calculation for 13+ trading platforms, real-time P&L preview, and a stunning dark-mode financial dashboard UI.
+> Professional trading journal with automated fee calculation, dual currency stats, and email authentication
 
----
+[![Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
+[![Supabase](https://img.shields.io/badge/Supabase-Auth-green?style=for-the-badge&logo=supabase)](https://supabase.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
 
 ## ✨ Features
 
-### 🎯 Core Functionality
+### 🔐 **Authentication**
 
-- ✅ **Manual Trade Entry** - Record both crypto and stock trades
-- ✅ **Automated Fee Calculation** - Smart fee engine for 13+ platforms
-- ✅ **Live P&L Preview** - Real-time calculations as you type
-- ✅ **Long & Short Positions** - Support for both trade types
-- ✅ **ROI Tracking** - Instant return on investment calculations
-- ✅ **User Authentication** - Secure with Supabase Auth + RLS
+- Email/Password login (100% FREE)
+- Secure session management via Supabase Auth
+- Protected routes & user profiles
 
-### 🎨 Premium UI/UX
+### 📈 **Trading Dashboard**
 
-- 🌙 **Modern Dark Mode** - Slate-900/950 professional theme
-- 🎭 **Framer Motion Animations** - Smooth, polished interactions
-- 📱 **Fully Responsive** - Mobile-first design
-- 🎨 **Financial Color Scheme** - Emerald for profits, Rose for losses
-- 🔄 **Platform Chips** - Horizontal scrollable platform selector with brand logos
-- 📊 **Floating Summary Card** - Live P&L breakdown with fee transparency
+- **Dual Currency System:**
+  - Crypto trades in **USD** ($)
+  - Stock trades in **IDR** (Rp)
+- Real-time P&L calculations
+- Win rate tracking
+- Best/Worst trade analytics
 
-### 💼 Supported Platforms
+### 💰 **Automated Fee Calculation**
 
-#### 📈 Stock Platforms (6)
+- **13 Trading Platforms Supported:**
+  - **Stocks (6):** Ajaib, Stockbit, IPOT, Mirae Asset, Gotrade, Interactive Brokers
+  - **Crypto (7):** Binance, Bybit, Tokocrypto, Indodax, OKX, Reku, Pintu
+- Platform-specific fee structures (2026 rates)
+- Automatic fee deduction from P&L
 
-| Platform                | Buy Fee      | Sell Fee     | Type       |
-| ----------------------- | ------------ | ------------ | ---------- |
-| **Ajaib**               | 0.15%        | 0.25%        | Percentage |
-| **Stockbit**            | 0.15%        | 0.25%        | Percentage |
-| **IPOT**                | 0.19%        | 0.29%        | Percentage |
-| **Mirae Asset**         | 0.15%        | 0.25%        | Percentage |
-| **Gotrade**             | $0.99-$1.99  | $0.99-$1.99  | Flat Fee   |
-| **Interactive Brokers** | $0.005/share | $0.005/share | Tiered     |
+### 📊 **Stock Lot System**
 
-#### 💰 Crypto Platforms (7)
+- Indonesian stock market lot conversion (1 lot = 100 shares)
+- Automatic calculation for lot-based trades
+- Clear display: "10 lot (1,000 lembar)"
 
-| Platform       | Trading Fee | Type        |
-| -------------- | ----------- | ----------- |
-| **Binance**    | 0.1%        | Taker/Maker |
-| **Bybit**      | 0.1%        | Standard    |
-| **Tokocrypto** | 0.1%        | Standard    |
-| **Indodax**    | 0.21%       | Standard    |
-| **OKX**        | 0.1%        | Taker       |
-| **Reku**       | 0.15%       | Standard    |
-| **Pintu**      | 0.15%       | Standard    |
+### 🎯 **Live Preview**
+
+- Real-time P&L calculation as you type
+- Instant fee calculation
+- ROI percentage display
+- Color-coded profit/loss indicators
+
+### 💡 **Motivational Quotes**
+
+- Dynamic quotes based on performance
+- Contextual messages for different win rates
+- Encouraging feedback system
+
+### 📱 **Modern UI/UX**
+
+- Premium dark mode design
+- Framer Motion animations
+- Responsive layout (mobile, tablet, desktop)
+- Glassmorphism effects
 
 ---
 
@@ -55,310 +64,250 @@ A premium, production-ready trading journal application built with **Next.js 14*
 
 ### Prerequisites
 
-- **Node.js** 18+
-- **npm** or **yarn** or **pnpm**
-- **Supabase Account** (free tier works!)
+- Node.js 18+
+- Supabase Account (free tier)
+- Git
 
-### 1️⃣ Clone & Install
+### Installation
 
 ```bash
-# Clone repository
-git clone <your-repo-url>
-cd jurnal-trading-ku
+# 1. Clone repository
+git clone https://github.com/naidrahiqa/Trading-Journal.git
+cd Trading-Journal
 
-# Install dependencies
+# 2. Install dependencies
 npm install
-```
 
-### 2️⃣ Environment Setup
+# 3. Setup environment variables
+cp .env.example .env.local
 
-Create `.env.local`:
+# Edit .env.local with your Supabase credentials:
+# NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+# NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 
-```env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-```
+# 4. Run database migration
+# Go to Supabase SQL Editor and run: migrations/001_create_trading_logs.sql
 
-### 3️⃣ Database Migration
-
-1. Go to your **Supabase Dashboard** → SQL Editor
-2. Open `migrations/001_create_trading_logs.sql`
-3. Copy and paste the entire script
-4. Click **Run** to execute the migration
-
-This will create:
-
-- `trading_logs` table with proper schema
-- Row Level Security (RLS) policies
-- Indexes for performance
-- `trading_stats` view for analytics
-- Auto-update triggers
-
-### 4️⃣ Run Development Server
-
-```bash
+# 5. Start development server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) 🎉
+Open [http://localhost:3000](http://localhost:3000)
 
 ---
 
-## 📦 Dependencies
+## 📚 Documentation
 
-### Required Packages
+- **[QUICKSTART.md](QUICKSTART.md)** - 10-minute setup guide
+- **[INTEGRATION.md](INTEGRATION.md)** - Advanced integration
+- **[PROJECT_SUMMARY.md](PROJECT_SUMMARY.md)** - Architecture overview
+- **[EMAIL_LOGIN_FIX.md](EMAIL_LOGIN_FIX.md)** - Auth troubleshooting
+- **[CURRENCY_UPDATE.md](CURRENCY_UPDATE.md)** - Dual currency system
+- **[LOT_SYSTEM.md](LOT_SYSTEM.md)** - Stock lot conversion
 
-```json
-{
-  "dependencies": {
-    "next": "^14.0.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "typescript": "^5.3.0",
-    "@supabase/auth-helpers-nextjs": "^0.8.0",
-    "@supabase/supabase-js": "^2.38.0",
-    "framer-motion": "^10.16.0",
-    "lucide-react": "^0.294.0",
-    "tailwindcss": "^3.4.0",
-    "autoprefixer": "^10.4.0",
-    "postcss": "^8.4.0"
-  },
-  "devDependencies": {
-    "@types/node": "^20.10.0",
-    "@types/react": "^18.2.0",
-    "@types/react-dom": "^18.2.0"
-  }
-}
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+
+- **Next.js 14** - React framework with App Router
+- **TypeScript** - Type safety
+- **Tailwind CSS** - Utility-first CSS
+- **Framer Motion** - Animations
+- **Lucide React** - Icon library
+
+### Backend
+
+- **Supabase** - PostgreSQL database + Auth
+- **Row Level Security (RLS)** - Data protection
+- **Real-time subscriptions** - Live updates
+
+---
+
+## 📊 Database Schema
+
+```sql
+trading_logs (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES auth.users,
+  asset_name TEXT,
+  asset_type ENUM('crypto', 'stock'),
+  platform_id TEXT,
+  order_type ENUM('long', 'short'),
+  entry_price NUMERIC,
+  exit_price NUMERIC,
+  quantity NUMERIC,
+  gross_pnl NUMERIC,
+  total_fee NUMERIC,
+  net_pnl NUMERIC,
+  notes TEXT,
+  created_at TIMESTAMP,
+  updated_at TIMESTAMP
+)
 ```
 
-Install missing packages:
+**Includes:**
+
+- 5 performance indexes
+- 4 RLS policies (view, insert, update, delete)
+- Auto-update trigger
+- Analytics view (`trading_stats`)
+
+---
+
+## 🎨 Screenshots
+
+### Dashboard Summary
+
+- Total trades, Win rate, Combined P&L
+- Separate crypto (USD) and stock (IDR) stats
+- Recent trades list
+
+### Add Trade Form
+
+- Platform selection with brand logos
+- Crypto/Stock toggle
+- Long/Short order types
+- Live P&L preview card
+
+### Login Page
+
+- Email/Password authentication
+- Clean, professional design
+- Feature highlights
+
+---
+
+## 💡 Key Features Explained
+
+### Dual Currency System
+
+```typescript
+// Crypto → USD
+formatCurrency(11650.75, "crypto"); // "$11,650.75"
+
+// Stock → IDR
+formatCurrency(11650750, "stock"); // "Rp11.650.750"
+```
+
+### Lot System for Stocks
+
+```typescript
+// User input: 10 lot
+// System calculates: 10 × 100 = 1,000 shares
+// Display: "10 lot (1,000 lembar)"
+```
+
+### Automated Fee Calculation
+
+```typescript
+// Example: Bitcoin on Binance (0.1% fee)
+Entry: $50,000 × 0.5 BTC = $25,000
+Exit:  $51,000 × 0.5 BTC = $25,500
+Gross P&L: $500
+Buy Fee: $25 (0.1%)
+Sell Fee: $25.50 (0.1%)
+Net P&L: $449.50
+```
+
+---
+
+## 🔐 Security
+
+- ✅ Row Level Security (RLS) enabled
+- ✅ Users only see their own data
+- ✅ Authentication required for all operations
+- ✅ SQL injection protection (parameterized queries)
+- ✅ Full TypeScript type safety
+
+---
+
+## 🚀 Deployment
+
+### Vercel (Recommended)
 
 ```bash
-npm install @supabase/auth-helpers-nextjs @supabase/supabase-js framer-motion lucide-react
+# 1. Install Vercel CLI
+npm i -g vercel
+
+# 2. Deploy
+vercel
+
+# 3. Add environment variables in Vercel dashboard
+```
+
+### Environment Variables
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_key
 ```
 
 ---
 
-## 🏗️ Project Structure
+## 📈 Roadmap
 
-```
-jurnal-trading-ku/
-├── src/
-│   ├── components/
-│   │   └── TradingDashboard.tsx      # Main dashboard component
-│   ├── config/
-│   │   └── platformFees.ts           # Fee configuration for all platforms
-│   ├── types/
-│   │   └── trading.ts                # TypeScript type definitions
-│   └── utils/
-│       └── tradingCalculations.ts    # P&L calculation utilities
-├── migrations/
-│   └── 001_create_trading_logs.sql   # Supabase database schema
-├── .env.local                        # Environment variables (create this)
-├── package.json
-├── tailwind.config.js
-└── README.md
-```
+- [ ] Email notifications (weekly summary)
+- [ ] Charts & visualizations
+- [ ] Trade history table with filters
+- [ ] Export to CSV/Excel
+- [ ] Mobile app (React Native)
+- [ ] Advanced analytics (Sharpe ratio, etc.)
+- [ ] Multi-currency support
+- [ ] Tax reporting
 
 ---
 
-## 🧮 How Fee Calculation Works
+## 🤝 Contributing
 
-The app automatically calculates fees based on the selected platform:
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-### Example: Binance (Crypto)
-
-```typescript
-Entry: $50,000 × 100 BTC = $5,000,000
-Buy Fee: 0.1% = $5,000
-
-Exit: $51,000 × 100 BTC = $5,100,000
-Sell Fee: 0.1% = $5,100
-
-Gross P&L: $100,000
-Total Fees: $10,100
-Net P&L: $89,900
-ROI: 1.80%
-```
-
-### Example: Ajaib (Stock)
-
-```typescript
-Entry: Rp 4,500 × 10,000 shares = Rp 45,000,000
-Buy Fee: 0.15% = Rp 67,500
-
-Exit: Rp 5,000 × 10,000 shares = Rp 50,000,000
-Sell Fee: 0.25% = Rp 125,000
-
-Gross P&L: Rp 5,000,000
-Total Fees: Rp 192,500
-Net P&L: Rp 4,807,500
-ROI: 10.68%
-```
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ---
 
-## 🔐 Security Features
+## 📝 License
 
-### Row Level Security (RLS)
-
-All trading logs are protected with Supabase RLS:
-
-- ✅ Users can only view **their own** trades
-- ✅ Users can only insert/update/delete **their own** trades
-- ✅ No user can access another user's data
-
-### Authentication Required
-
-The dashboard requires users to be authenticated via Supabase Auth before saving trades.
+This project is open source and available under the [MIT License](LICENSE).
 
 ---
 
-## 🎨 UI Components Breakdown
+## 👨‍💻 Author
 
-### 1. Asset Type Toggle
+**Naidra Hiqa**
 
-Animated switch between **Crypto** and **Stocks** modes with gradient backgrounds.
-
-### 2. Platform Selector
-
-Horizontal scrollable chips featuring:
-
-- Platform emoji/logo
-- Platform name
-- Fee description
-- Active state with emerald glow
-
-### 3. Order Type Toggle
-
-Visual buttons for **Long (Buy)** vs **Short (Sell)** with directional arrow icons.
-
-### 4. Live Preview Card
-
-Real-time calculations displaying:
-
-- Net P&L with trend icon
-- ROI percentage
-- Gross P&L breakdown
-- Buy/Sell fee itemization
-- Total investment value
-
-### 5. Form Validation
-
-Instant feedback with:
-
-- Visual error states
-- Toast notifications
-- Success animations
+- GitHub: [@naidrahiqa](https://github.com/naidrahiqa)
 
 ---
 
-## 📊 Using the Dashboard
+## 🙏 Acknowledgments
 
-### Step-by-Step Guide
-
-1. **Select Asset Type** - Toggle between Crypto or Stocks
-2. **Choose Platform** - Click on your trading platform chip
-3. **Enter Asset Name** - E.g., "BTC/USDT" or "AAPL"
-4. **Select Order Type** - Long (buy low, sell high) or Short
-5. **Input Trade Details**:
-   - Entry Price
-   - Exit Price
-   - Quantity
-6. **Add Notes** (Optional) - Trade rationale or strategy
-7. **Review Live Preview** - Check calculated P&L and fees
-8. **Save Trade** - Submit to database
+- Built with [Next.js](https://nextjs.org/)
+- Database & Auth by [Supabase](https://supabase.com/)
+- UI components inspired by modern fintech applications
+- Fee data based on 2026 platform rates
 
 ---
 
-## 🛠️ Customization
+## 📞 Support
 
-### Adding New Platforms
+If you have any questions or run into issues:
 
-Edit `src/config/platformFees.ts`:
-
-```typescript
-{
-  id: 'new_platform',
-  name: 'New Platform',
-  logo: '🆕',
-  assetType: 'crypto', // or 'stock'
-  color: '#FF5733',
-  fees: {
-    buy: 0.2,    // 0.2%
-    sell: 0.2,   // 0.2%
-    type: 'percentage',
-    description: '0.2% Trading Fee'
-  }
-}
-```
-
-### Modifying Fee Logic
-
-For complex fee structures (tiered, volume-based), use functions:
-
-```typescript
-const customFee = (amount: number, volume: number): number => {
-  if (volume < 1000) return amount * 0.003; // 0.3%
-  if (volume < 10000) return amount * 0.002; // 0.2%
-  return amount * 0.001; // 0.1%
-};
-```
+1. Check the [documentation](docs/)
+2. Search [existing issues](https://github.com/naidrahiqa/Trading-Journal/issues)
+3. Open a [new issue](https://github.com/naidrahiqa/Trading-Journal/issues/new)
 
 ---
 
-## 🔮 Future Enhancements
+<div align="center">
 
-- [ ] **Trade History Table** with pagination
-- [ ] **Analytics Dashboard** with charts (win rate, P&L trends)
-- [ ] **Export to CSV/Excel**
-- [ ] **Multi-currency support** (IDR, EUR, etc.)
-- [ ] **Trade filtering** by date range, platform, asset type
-- [ ] **Performance metrics** (Sharpe ratio, max drawdown)
-- [ ] **Mobile app** with React Native
+**⭐ Star this repo if you find it helpful!**
 
----
+Made with ❤️ by [Naidra Hiqa](https://github.com/naidrahiqa)
 
-## 🐛 Troubleshooting
-
-### Issue: "Invalid API Key" Error
-
-**Solution**: Double-check your `.env.local` file has correct Supabase credentials.
-
-### Issue: RLS Policy Blocking Inserts
-
-**Solution**: Ensure user is authenticated before submitting trades:
-
-```typescript
-const {
-  data: { user },
-} = await supabase.auth.getUser();
-if (!user) throw new Error("Not authenticated");
-```
-
-### Issue: Calculation Shows NaN
-
-**Solution**: Ensure all numeric inputs are valid numbers > 0.
-
----
-
-## 📄 License
-
-MIT License - feel free to use this in your projects!
-
----
-
-## 🙏 Credits
-
-- **UI Design Inspiration**: Modern fintech dashboards (Robinhood, Webull)
-- **Icons**: [Lucide Icons](https://lucide.dev)
-- **Animations**: [Framer Motion](https://www.framer.com/motion/)
-- **Database**: [Supabase](https://supabase.com)
-
----
-
-## 📧 Support
-
-For issues, questions, or feature requests, please open an issue on GitHub.
-
-**Happy Trading! 📈💰**
+</div>
