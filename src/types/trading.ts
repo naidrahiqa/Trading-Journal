@@ -182,6 +182,8 @@ export interface ShareableCardData {
   platformLogo: string;
   netPnL: number;
   roi: number;
+  entryPrice?: number;
+  exitPrice?: number;
   assetType: AssetType;
   timestamp: string;
 }

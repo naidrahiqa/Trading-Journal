@@ -10,12 +10,13 @@ import React, { useRef, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Share2, Download, TrendingUp, TrendingDown, X, Sparkles,
-  Image as ImageIcon, Maximize, User, Palette, Upload
+  Image as ImageIcon, Maximize, User, Palette, Upload,
+  Eye, EyeOff
 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { ShareableCardData } from '@/types/trading';
 import { formatCurrency, formatPercentage } from '@/utils/tradingCalculations';
-import { generateCryptoAvatar, generateStockAvatar, getBrokerLogo } from '@/utils/logoUtils';
+import { getAssetLogo, getBrokerLogo } from '@/utils/logoUtils';
 
 interface CustomPnLCardProps {
   data: ShareableCardData;
@@ -51,6 +52,7 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
   const [background, setBackground] = useState(DEFAULT_BACKGROUNDS[0]);
   const [customBgImage, setCustomBgImage] = useState<string | null>(null);
   const [showCustomize, setShowCustomize] = useState(true);
+  const [hideValues, setHideValues] = useState(false);
 
   // Load user profile
   useEffect(() => {
@@ -59,12 +61,15 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
 
   // Generate asset logo
   useEffect(() => {
-    const symbol = data.assetName.split('/')[0];
-    if (data.assetType === 'crypto') {
-      setAssetLogoUrl(generateCrypto Avatar(symbol.toLowerCase()));
-    } else {
-      setAssetLogoUrl(generateStockAvatar(symbol.toUpperCase()));
-    }
+    const fetchLogo = async () => {
+      try {
+        const url = await getAssetLogo(data.assetName, data.assetType);
+        setAssetLogoUrl(url);
+      } catch (error) {
+        console.error('Error fetching logo:', error);
+      }
+    };
+    fetchLogo();
   }, [data.assetName, data.assetType]);
 
   const loadUserProfile = async () => {
@@ -224,17 +229,39 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
                   <div className="text-3xl">{getBrokerLogo(data.platformName.toLowerCase())}</div>
                 </div>
 
-                {/* PnL Display */}
+                {/* Main Content: PnL or Entry/Exit */}
                 <div className="text-center my-8">
                   <p className="text-slate-400 text-sm mb-2 uppercase tracking-[0.3em]">
-                    NET PROFIT/LOSS
+                    {hideValues ? 'TRADE RESULT' : 'NET PROFIT/LOSS'}
                   </p>
-                  <div className={`text-6xl font-black mb-3 flex items-center justify-center gap-3 ${
-                    isProfitable ? 'text-emerald-400' : 'text-rose-400'
-                  }`}>
-                    {isProfitable ? <TrendingUp className="w-12 h-12" /> : <TrendingDown className="w-12 h-12" />}
-                    <span>{formatCurrency(data.netPnL, data.assetType)}</span>
-                  </div>
+                  
+                  {hideValues && data.entryPrice && data.exitPrice ? (
+                    // Hidden Mode: Show Entry/Exit
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div className="bg-slate-800/50 rounded-xl p-3 border border-slate-700/50">
+                        <p className="text-slate-400 text-xs uppercase mb-1">Entry</p>
+                        <p className="text-xl font-bold text-white">
+                          {formatCurrency(data.entryPrice, data.assetType)}
+                        </p>
+                      </div>
+                      <div className="bg-slate-800/50 rounded-xl p-3 border border-slate-700/50">
+                        <p className="text-slate-400 text-xs uppercase mb-1">Exit</p>
+                        <p className="text-xl font-bold text-white">
+                          {formatCurrency(data.exitPrice, data.assetType)}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    // Regular Mode: Show Net PnL
+                    <div className={`text-6xl font-black mb-3 flex items-center justify-center gap-3 ${
+                      isProfitable ? 'text-emerald-400' : 'text-rose-400'
+                    }`}>
+                      {isProfitable ? <TrendingUp className="w-12 h-12" /> : <TrendingDown className="w-12 h-12" />}
+                      <span>{formatCurrency(data.netPnL, data.assetType)}</span>
+                    </div>
+                  )}
+
+                  {/* ROI Badge */}
                   <div className={`inline-block px-6 py-3 rounded-full border-2 ${
                     isProfitable
                       ? 'bg-emerald-500/10 border-emerald-400'
@@ -287,6 +314,27 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
                   <Palette className="w-5 h-5" />
                   Customize Card
                 </h3>
+
+                {/* Privacy Mode Toggle */}
+                <div className="flex items-center justify-between p-4 bg-slate-800 rounded-xl border border-slate-700">
+                  <div className="flex items-center gap-3">
+                    {hideValues ? <EyeOff className="w-5 h-5 text-emerald-400" /> : <Eye className="w-5 h-5 text-slate-400" />}
+                    <div>
+                      <p className="text-white font-medium">Privacy Mode</p>
+                      <p className="text-xs text-slate-400">Hide Net PnL value</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setHideValues(!hideValues)}
+                    className={`relative w-12 h-6 rounded-full transition-colors ${
+                      hideValues ? 'bg-emerald-500' : 'bg-slate-600'
+                    }`}
+                  >
+                    <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${
+                      hideValues ? 'translate-x-6' : 'translate-x-0'
+                    }`} />
+                  </button>
+                </div>
 
                 {/* Username */}
                 <div>

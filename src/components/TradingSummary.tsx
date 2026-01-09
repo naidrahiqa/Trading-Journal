@@ -23,7 +23,7 @@ import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { TradingLog, TimeframeFilter, TimeframeOption, ViewMode, ShareableCardData } from '@/types/trading';
 import { formatCurrency, formatPercentage, getPnLColorClass } from '@/utils/tradingCalculations';
 import { getPlatformById } from '@/config/platformFees';
-import ShareablePnLCard from './ShareablePnLCard';
+import CustomPnLCard from './CustomPnLCard';
 import MistakeCostWidget from './MistakeCostWidget';
 import TradingHoursWidget from './TradingHoursWidget';
 import { subDays, subMonths, isAfter, parseISO } from 'date-fns';
@@ -183,6 +183,8 @@ export default function EnhancedTradingSummary() {
       platformLogo: platform?.logo || '💹',
       netPnL: trade.net_pnl,
       roi,
+      entryPrice: trade.entry_price,
+      exitPrice: trade.exit_price,
       assetType: trade.asset_type,
       timestamp: trade.created_at,
     };
@@ -372,7 +374,7 @@ export default function EnhancedTradingSummary() {
       {/* Shareable Card Modal */}
       <AnimatePresence>
         {shareCardData && (
-          <ShareablePnLCard
+          <CustomPnLCard
             data={shareCardData}
             onClose={() => setShareCardData(null)}
           />
