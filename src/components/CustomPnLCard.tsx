@@ -208,12 +208,12 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
       onClick={onClose}
     >
       <div 
-        className="min-h-full w-full flex items-center justify-center p-4 md:p-8"
+        className="min-h-full w-full flex items-start md:items-center justify-center p-4 md:p-8"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="w-full max-w-7xl flex flex-col lg:flex-row gap-8 items-center lg:items-start justify-center">
           {/* Preview Area */}
-          <div className="flex flex-col items-center sticky top-4">
+          <div className="flex flex-col items-center lg:sticky lg:top-4">
             
             {/* Scale Container */}
             <div style={previewContainerStyle} className="shadow-2xl rounded-3xl overflow-hidden relative border border-slate-700">
