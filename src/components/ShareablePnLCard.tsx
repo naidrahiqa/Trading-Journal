@@ -64,16 +64,24 @@ export default function ShareablePnLCard({ data, onClose }: ShareablePnLCardProp
       canvas.toBlob(async (blob) => {
         if (!blob) return;
 
-        if (navigator.share && navigator.canShare) {
+        // Check if Web Share API is available and can share files
+        if (navigator.share && typeof navigator.canShare === 'function') {
           const file = new File([blob], `pnl-${data.assetName}.png`, { type: 'image/png' });
-          try {
-            await navigator.share({
-              files: [file],
-              title: `${data.assetName} PnL`,
-              text: `${data.netPnL >= 0 ? '📈' : '📉'} ${formatCurrency(data.netPnL, data.assetType)} (${formatPercentage(data.roi)})`,
-            });
-          } catch (err) {
-            // Fallback to download if sharing fails
+          
+          // Check if this specific file can be shared
+          if (navigator.canShare({ files: [file] })) {
+            try {
+              await navigator.share({
+                files: [file],
+                title: `${data.assetName} PnL`,
+                text: `${data.netPnL >= 0 ? '📈' : '📉'} ${formatCurrency(data.netPnL, data.assetType)} (${formatPercentage(data.roi)})`,
+              });
+            } catch (err) {
+              // Fallback to download if sharing fails
+              handleDownload();
+            }
+          } else {
+            // Can't share files, fallback to download
             handleDownload();
           }
         } else {

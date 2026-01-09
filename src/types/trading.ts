@@ -32,8 +32,8 @@ export type Platform = StockPlatform | CryptoPlatform;
 // ==================== FEE STRUCTURE ====================
 
 export interface FeeStructure {
-  buy: number | ((amount: number) => number); // Percentage or function
-  sell: number | ((amount: number) => number); // Percentage or function
+  buy: number | ((amount: number, shares?: number) => number); // Percentage or function
+  sell: number | ((amount: number, shares?: number) => number); // Percentage or function
   type: "percentage" | "flat" | "tiered";
   description?: string;
 }
