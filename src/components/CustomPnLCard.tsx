@@ -1,7 +1,7 @@
 /**
  * Custom PnL Card Editor
  * @description Customizable card with background upload & aspect ratio
- * @version 3.0.0
+ * @version 3.1.0 (HD Output & Privacy Mode)
  */
 
 'use client';
@@ -59,7 +59,7 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
     loadUserProfile();
   }, []);
 
-  // Generate asset logo
+  // Generate real asset logo with fallback
   useEffect(() => {
     const fetchLogo = async () => {
       try {
@@ -111,11 +111,18 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
     try {
       const canvas = await html2canvas(cardRef.current, {
         backgroundColor: null,
-        scale: 3,
+        scale: 2, // High resolution output
         logging: false,
         useCORS: true,
         width: selectedRatio.width,
         height: selectedRatio.height,
+        // IMPORTANT: Reset transform during capture to get full resolution
+        onclone: (clonedDoc) => {
+          const el = clonedDoc.getElementById('pnl-card-export');
+          if (el) {
+            el.style.transform = 'none';
+          }
+        }
       });
 
       canvas.toBlob(async (blob) => {
@@ -160,11 +167,24 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
   const isProfitable = data.netPnL >= 0;
   const assetTypeLabel = data.assetType === 'crypto' ? 'CRYPTOCURRENCY' : 'SAHAM';
 
+  // RESPONSIVE PREVIEW SCALING
+  // We render the card at FULL 1080p+ RESOLUTION internally for perfect neatness
+  // Then we scale it down visually to fit the screen.
+  const PREVIEW_SCALE = 0.35; 
+
+  const previewContainerStyle = {
+    width: `${selectedRatio.width * PREVIEW_SCALE}px`,
+    height: `${selectedRatio.height * PREVIEW_SCALE}px`,
+    position: 'relative' as const,
+  };
+
   const cardStyle = {
-    width: `${selectedRatio.width / 3}px`,
-    height: `${selectedRatio.height / 3}px`,
-    maxWidth: '100%',
-    maxHeight: '80vh',
+    width: `${selectedRatio.width}px`,
+    height: `${selectedRatio.height}px`,
+    transform: `scale(${PREVIEW_SCALE})`,
+    transformOrigin: 'top left',
+    maxWidth: 'none',
+    maxHeight: 'none',
   };
 
   return (
@@ -175,130 +195,138 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
       className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto"
       onClick={onClose}
     >
-      <div className="w-full max-w-7xl mx-auto" onClick={(e) => e.stopPropagation()}>
-        <div className="grid lg:grid-cols-[1fr_400px] gap-6 items-start">
+      <div className="w-full max-w-7xl mx-auto flex justify-center" onClick={(e) => e.stopPropagation()}>
+        <div className="flex flex-col lg:flex-row gap-8 items-center lg:items-start">
           {/* Preview Area */}
           <div className="flex flex-col items-center">
-            <button
-              onClick={onClose}
-              className="self-end mb-4 text-white hover:text-emerald-400 transition-colors"
-            >
-              <X className="w-8 h-8" />
-            </button>
+            
+            {/* Scale Container */}
+            <div style={previewContainerStyle} className="shadow-2xl rounded-3xl overflow-hidden relative border border-slate-700">
+               {/* Actual Card (Full Res, Scaled Down) */}
+              <div
+                ref={cardRef}
+                id="pnl-card-export"
+                className="relative overflow-hidden bg-slate-900"
+                style={cardStyle}
+              >
+                {/* Background */}
+                <div 
+                  className="absolute inset-0"
+                  style={{
+                    background: customBgImage ? `url(${customBgImage})` : background,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                  }}
+                />
 
-            {/* Card Preview */}
-            <div
-              ref={cardRef}
-              className="relative overflow-hidden rounded-3xl shadow-2xl"
-              style={cardStyle}
-            >
-              {/* Background */}
-              <div 
-                className="absolute inset-0"
-                style={{
-                  background: customBgImage ? `url(${customBgImage})` : background,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                }}
-              />
+                {/* Overlay */}
+                <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"></div>
 
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-sm"></div>
+                {/* Content */}
+                <div className="relative h-full flex flex-col justify-between p-12">
+                  {/* Header */}
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-6">
+                      <img 
+                        src={assetLogoUrl}
+                        alt={data.assetName}
+                        className="w-24 h-24 rounded-3xl shadow-2xl"
+                      />
+                      <div>
+                        <h2 className="text-5xl font-black text-white tracking-tight mb-2">
+                          {data.assetName}
+                        </h2>
+                        <span className={`px-4 py-2 rounded-full text-2xl font-bold tracking-wider border ${
+                          isProfitable 
+                            ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' 
+                            : 'bg-rose-500/20 text-rose-300 border-rose-500/30'
+                        }`}>
+                          {assetTypeLabel}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-7xl drop-shadow-lg">{getBrokerLogo(data.platformName.toLowerCase())}</div>
+                  </div>
 
-              {/* Content */}
-              <div className="relative h-full flex flex-col justify-between p-8">
-                {/* Header */}
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-4">
-                    <img 
-                      src={assetLogoUrl}
-                      alt={data.assetName}
-                      className="w-16 h-16 rounded-2xl shadow-2xl"
-                    />
-                    <div>
-                      <h2 className="text-2xl font-black text-white tracking-tight">
-                        {data.assetName}
-                      </h2>
-                      <span className={`text-xs font-bold tracking-wider ${
-                        isProfitable ? 'text-emerald-300' : 'text-rose-300'
+                  {/* Main Content: PnL or Entry/Exit */}
+                  <div className="text-center my-12">
+                    <p className="text-slate-300 font-bold text-2xl mb-8 uppercase tracking-[0.4em] drop-shadow-md">
+                      {hideValues ? 'TRADE RESULT' : 'NET PROFIT/LOSS'}
+                    </p>
+                    
+                    {hideValues && data.entryPrice && data.exitPrice ? (
+                      // Hidden Mode: Show Entry/Exit
+                      <div className="grid grid-cols-2 gap-8 mb-8 max-w-4xl mx-auto">
+                        <div className="bg-slate-900/60 backdrop-blur-md rounded-3xl p-8 border border-white/10">
+                          <p className="text-slate-400 font-bold text-lg uppercase mb-2 tracking-widest">Entry</p>
+                          <p className="text-5xl font-black text-white">
+                            {formatCurrency(data.entryPrice, data.assetType)}
+                          </p>
+                        </div>
+                        <div className="bg-slate-900/60 backdrop-blur-md rounded-3xl p-8 border border-white/10">
+                          <p className="text-slate-400 font-bold text-lg uppercase mb-2 tracking-widest">Exit</p>
+                          <p className="text-5xl font-black text-white">
+                            {formatCurrency(data.exitPrice, data.assetType)}
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      // Regular Mode: Show Net PnL
+                      <div className={`text-[8rem] leading-none font-black mb-10 flex items-center justify-center gap-6 drop-shadow-2xl ${
+                        isProfitable ? 'text-emerald-400' : 'text-rose-400'
                       }`}>
-                        {assetTypeLabel}
+                        {isProfitable ? <TrendingUp className="w-32 h-32" /> : <TrendingDown className="w-32 h-32" />}
+                        <span>{formatCurrency(data.netPnL, data.assetType)}</span>
+                      </div>
+                    )}
+
+                    {/* ROI Badge */}
+                    <div className={`inline-block px-12 py-6 rounded-full border-4 shadow-2xl backdrop-blur-xl ${
+                      isProfitable
+                        ? 'bg-emerald-500/20 border-emerald-400'
+                        : 'bg-rose-500/20 border-rose-400'
+                    }`}>
+                      <span className={`text-6xl font-black tracking-tight ${
+                        isProfitable ? 'text-white' : 'text-white'
+                      }`} style={{ textShadow: isProfitable ? '0 0 30px rgba(52, 211, 153, 0.6)' : '0 0 30px rgba(244, 63, 94, 0.6)' }}>
+                        {isProfitable ? '+' : ''}{formatPercentage(data.roi)} ROI
                       </span>
                     </div>
                   </div>
-                  <div className="text-3xl">{getBrokerLogo(data.platformName.toLowerCase())}</div>
-                </div>
 
-                {/* Main Content: PnL or Entry/Exit */}
-                <div className="text-center my-8">
-                  <p className="text-slate-400 text-sm mb-2 uppercase tracking-[0.3em]">
-                    {hideValues ? 'TRADE RESULT' : 'NET PROFIT/LOSS'}
-                  </p>
-                  
-                  {hideValues && data.entryPrice && data.exitPrice ? (
-                    // Hidden Mode: Show Entry/Exit
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                      <div className="bg-slate-800/50 rounded-xl p-3 border border-slate-700/50">
-                        <p className="text-slate-400 text-xs uppercase mb-1">Entry</p>
-                        <p className="text-xl font-bold text-white">
-                          {formatCurrency(data.entryPrice, data.assetType)}
-                        </p>
-                      </div>
-                      <div className="bg-slate-800/50 rounded-xl p-3 border border-slate-700/50">
-                        <p className="text-slate-400 text-xs uppercase mb-1">Exit</p>
-                        <p className="text-xl font-bold text-white">
-                          {formatCurrency(data.exitPrice, data.assetType)}
-                        </p>
-                      </div>
+                  {/* Footer */}
+                  <div className="flex items-end justify-between border-t border-white/10 pt-8">
+                    <div>
+                      <p className="text-slate-400 font-bold text-xl mb-2 tracking-widest">TANGGAL</p>
+                      <p className="text-white font-bold text-3xl">
+                        {new Date(data.timestamp).toLocaleDateString('id-ID', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric'
+                        })}
+                      </p>
                     </div>
-                  ) : (
-                    // Regular Mode: Show Net PnL
-                    <div className={`text-6xl font-black mb-3 flex items-center justify-center gap-3 ${
-                      isProfitable ? 'text-emerald-400' : 'text-rose-400'
-                    }`}>
-                      {isProfitable ? <TrendingUp className="w-12 h-12" /> : <TrendingDown className="w-12 h-12" />}
-                      <span>{formatCurrency(data.netPnL, data.assetType)}</span>
-                    </div>
-                  )}
-
-                  {/* ROI Badge */}
-                  <div className={`inline-block px-6 py-3 rounded-full border-2 ${
-                    isProfitable
-                      ? 'bg-emerald-500/10 border-emerald-400'
-                      : 'bg-rose-500/10 border-rose-400'
-                  }`}>
-                    <span className={`text-2xl font-black ${
-                      isProfitable ? 'text-emerald-300' : 'text-rose-300'
-                    }`}>
-                      {isProfitable ? '+' : ''}{formatPercentage(data.roi)} ROI
-                    </span>
-                  </div>
-                </div>
-
-                {/* Footer */}
-                <div className="flex items-end justify-between">
-                  <div>
-                    <p className="text-slate-500 text-xs mb-1">TANGGAL</p>
-                    <p className="text-slate-300 font-semibold">
-                      {new Date(data.timestamp).toLocaleDateString('id-ID', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric'
-                      })}
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    {username && (
-                      <p className="text-emerald-400 font-bold text-lg mb-1">@{username}</p>
-                    )}
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-emerald-400" />
-                      <span className="text-sm font-bold text-white">Trading Journal</span>
+                    <div className="text-right">
+                      {username && (
+                        <p className="text-emerald-400 font-black text-4xl mb-2 drop-shadow-lg">@{username}</p>
+                      )}
+                      <div className="flex items-center gap-3 justify-end opacity-80">
+                        <Sparkles className="w-8 h-8 text-white" />
+                        <span className="text-2xl font-bold text-white tracking-wide">Trading Journal</span>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
+            
+            <button
+              onClick={onClose}
+              className="mt-6 text-slate-400 hover:text-white flex items-center gap-2 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+              Close Preview
+            </button>
           </div>
 
           {/* Customization Panel */}
@@ -308,7 +336,7 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
-                className="bg-slate-900/90 backdrop-blur-xl border border-slate-700 rounded-2xl p-6 space-y-6"
+                className="bg-slate-900/90 backdrop-blur-xl border border-slate-700 rounded-2xl p-6 space-y-6 lg:w-[400px]"
               >
                 <h3 className="text-xl font-bold text-white flex items-center gap-2">
                   <Palette className="w-5 h-5" />
@@ -391,7 +419,7 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
                   </button>
                   <input
                     ref={fileInputRef}
- type="file"
+                    type="file"
                     accept="image/*"
                     onChange={handleBackgroundUpload}
                     className="hidden"
