@@ -22,12 +22,15 @@ const MarketTicker = () => {
   const items = [
     { s: "BTC/USD", p: "98,245.00", c: "+2.4%", up: true },
     { s: "ETH/USD", p: "3,845.10", c: "+1.8%", up: true },
-    { s: "SOL/USD", p: "145.20", c: "-0.5%", up: false },
+    { s: "EUR/USD", p: "1.0850", c: "+0.1%", up: true }, // Forex
+    { s: "GBP/USD", p: "1.2740", c: "-0.3%", up: false }, // Forex
+    { s: "USD/JPY", p: "155.40", c: "+0.4%", up: true }, // Forex (New)
     { s: "XAU/USD", p: "2,450.50", c: "+0.2%", up: true },
+    { s: "SOL/USD", p: "145.20", c: "-0.5%", up: false },
+    { s: "AUD/USD", p: "0.6650", c: "-0.2%", up: false }, // Forex (New)
     { s: "NVDA", p: "142.50", c: "+3.1%", up: true },
+    { s: "USD/CAD", p: "1.3720", c: "+0.1%", up: true }, // Forex (New)
     { s: "TSLA", p: "210.80", c: "-1.2%", up: false },
-    { s: "EUR/USD", p: "1.0850", c: "+0.1%", up: true },
-    { s: "GBP/USD", p: "1.2740", c: "-0.3%", up: false },
   ];
 
   return (
