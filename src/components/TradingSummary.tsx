@@ -1,560 +1,558 @@
 /**
- * Trading Summary Dashboard
- * @description Main dashboard showing trading statistics and recent trades
+ * Enhanced Trading Summary with Timeframe Filtering
+ * @description Dashboard statistics with 7d, 1m, 3m, 4m, 12m, All Time filters
+ * @version 2.0.0
  */
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { 
-  TrendingUp, 
-  TrendingDown, 
+import React, { useState, useEffect, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  TrendingUp,
+  TrendingDown,
   DollarSign,
-  PlusCircle,
+  Trophy,
   Activity,
-  Award,
-  AlertTriangle,
+  LayoutGrid,
+  List,
+  Share2,
   Calendar,
-  BarChart3,
-  Mail
 } from 'lucide-react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { useRouter } from 'next/navigation';
+import { TradingLog, TimeframeFilter, TimeframeOption, ViewMode, ShareableCardData } from '@/types/trading';
 import { formatCurrency, formatPercentage, getPnLColorClass } from '@/utils/tradingCalculations';
+import { getPlatformById } from '@/config/platformFees';
+import ShareablePnLCard from './ShareablePnLCard';
+import { subDays, subMonths, isAfter, parseISO } from 'date-fns';
 
-interface TradeStats {
-  totalTrades: number;
-  winningTrades: number;
-  losingTrades: number;
-  winRate: number;
+// ==================== TIMEFRAME OPTIONS ====================
+
+const TIMEFRAME_OPTIONS: TimeframeOption[] = [
+  { id: 'last_trade', label: 'Hasil Barusan' },
+  { id: '7d', label: '7 Hari', daysBack: 7 },
+  { id: '1m', label: '1 Bulan', daysBack: 30 },
+  { id: '3m', label: '3 Bulan', daysBack: 90 },
+  { id: '4m', label: '4 Bulan', daysBack: 120 },
+  { id: '12m', label: '12 Bulan', daysBack: 365 },
+  { id: 'all_time', label: 'All Time' },
+];
+
+// ==================== UTILITY FUNCTIONS ====================
+
+const filterTradesByTimeframe = (trades: TradingLog[], timeframe: TimeframeFilter): TradingLog[] => {
+  if (timeframe === 'all_time') return trades;
   
-  // Crypto stats (USD)
-  cryptoTrades: number;
-  cryptoNetPnL: number;
-  cryptoBestTrade: number;
-  cryptoWorstTrade: number;
-  
-  // Stock stats (IDR)
-  stockTrades: number;
-  stockNetPnL: number;
-  stockBestTrade: number;
-  stockWorstTrade: number;
-}
-
-interface RecentTrade {
-  id: string;
-  asset_name: string;
-  asset_type: 'crypto' | 'stock';
-  platform_id: string;
-  net_pnl: number;
-  created_at: string;
-}
-
-// Motivational quotes based on performance
-const getMotivationalQuote = (stats: TradeStats | null): string => {
-  if (!stats || stats.totalTrades === 0) {
-    const quotes = [
-      "Every expert was once a beginner. Start your trading journey today!",
-      "The best time to start was yesterday. The next best time is now.",
-      "Success is the sum of small efforts repeated day in and day out.",
-      "Your first trade is the first step to financial freedom!"
-    ];
-    return quotes[Math.floor(Math.random() * quotes.length)];
+  if (timeframe === 'last_trade') {
+    const sorted = [...trades].sort((a, b) => 
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+    return sorted.length > 0 ? [sorted[0]] : [];
   }
 
-  const winRate = stats.winRate;
-  const totalPnL = stats.cryptoNetPnL + stats.stockNetPnL;
+  const option = TIMEFRAME_OPTIONS.find(opt => opt.id === timeframe);
+  if (!option || !option.daysBack) return trades;
 
-  if (winRate >= 70) {
-    const quotes = [
-      "Outstanding! You're trading like a pro! 🚀",
-      "Fantastic win rate! Keep up the excellent work!",
-      "You're on fire! But remember, discipline beats emotion.",
-      "Amazing performance! Stay consistent and humble."
-    ];
-    return quotes[Math.floor(Math.random() * quotes.length)];
-  } else if (winRate >= 50) {
-    const quotes = [
-      "Good progress! Every trade is a learning opportunity.",
-      "Steady and consistent wins the race. Keep going!",
-      "You're building solid foundations. Stay the course!",
-      "Great work! Remember to stick to your strategy."
-    ];
-    return quotes[Math.floor(Math.random() * quotes.length)];
-  } else {
-    const quotes = [
-      "Every trader faces challenges. Learn from each trade.",
-      "Losses are lessons in disguise. Review and improve!",
-      "The market is your teacher. Stay patient and keep learning.",
-      "Great traders are made in tough times. Don't give up!"
-    ];
-    return quotes[Math.floor(Math.random() * quotes.length)];
-  }
+  const cutoffDate = subDays(new Date(), option.daysBack);
+  
+  return trades.filter(trade => {
+    const tradeDate = parseISO(trade.created_at);
+    return isAfter(tradeDate, cutoffDate);
+  });
 };
 
-export default function TradingSummary() {
-  const router = useRouter();
+const calculateStats = (trades: TradingLog[]) => {
+  if (trades.length === 0) {
+    return {
+      totalTrades: 0,
+      winningTrades: 0,
+      losingTrades: 0,
+      winRate: 0,
+      totalNetPnL: 0,
+      totalFees: 0,
+      avgPnL: 0,
+      bestTrade: 0,
+      worstTrade: 0,
+    };
+  }
+
+  const winningTrades = trades.filter(t => t.net_pnl > 0).length;
+  const losingTrades = trades.filter(t => t.net_pnl < 0).length;
+  const totalNetPnL = trades.reduce((sum, t) => sum + t.net_pnl, 0);
+  const totalFees = trades.reduce((sum, t) => sum + t.total_fee, 0);
+  const avgPnL = totalNetPnL / trades.length;
+  const bestTrade = Math.max(...trades.map(t => t.net_pnl));
+  const worstTrade = Math.min(...trades.map(t => t.net_pnl));
+  const winRate = trades.length > 0 ? (winningTrades / trades.length) * 100 : 0;
+
+  return {
+    totalTrades: trades.length,
+    winningTrades,
+    losingTrades,
+    winRate,
+    totalNetPnL,
+    totalFees,
+    avgPnL,
+    bestTrade,
+    worstTrade,
+  };
+};
+
+// ==================== MAIN COMPONENT ====================
+
+export default function EnhancedTradingSummary() {
   const supabase = createClientComponentClient();
-  
-  const [stats, setStats] = useState<TradeStats | null>(null);
-  const [recentTrades, setRecentTrades] = useState<RecentTrade[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<any>(null);
+
+  // ==================== STATE ====================
+
+  const [allTrades, setAllTrades] = useState<TradingLog[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedTimeframe, setSelectedTimeframe] = useState<TimeframeFilter>('all_time');
+  const [viewMode, setViewMode] = useState<ViewMode>('kece_abis');
+  const [shareCardData, setShareCardData] = useState<ShareableCardData | null>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // ==================== DATA FETCHING ====================
 
   useEffect(() => {
-    checkAuth();
-  }, []);
+    fetchTrades();
+  }, [refreshTrigger]);
 
-  const checkAuth = async () => {
+  const fetchTrades = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.push('/login');
-        return;
-      }
-      setUser(session.user);
-      fetchStats();
-      fetchRecentTrades();
-    } catch (error) {
-      console.error('Error checking auth:', error);
-      router.push('/login');
-    }
-  };
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
 
-  const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-      router.push('/login');
-    } catch (error) {
-      console.error('Error logging out:', error);
-    }
-  };
-
-  const fetchStats = async () => {
-    try {
-      const { data: trades, error } = await supabase
-        .from('trading_logs')
-        .select('asset_type, net_pnl');
-
-      if (error) throw error;
-      if (!trades || trades.length === 0) {
-        setStats({
-          totalTrades: 0,
-          winningTrades: 0,
-          losingTrades: 0,
-          winRate: 0,
-          cryptoTrades: 0,
-          cryptoNetPnL: 0,
-          cryptoBestTrade: 0,
-          cryptoWorstTrade: 0,
-          stockTrades: 0,
-          stockNetPnL: 0,
-          stockBestTrade: 0,
-          stockWorstTrade: 0
-        });
-        setLoading(false);
-        return;
-      }
-
-      // Separate crypto and stock trades
-      const cryptoTrades = trades.filter(t => t.asset_type === 'crypto');
-      const stockTrades = trades.filter(t => t.asset_type === 'stock');
-
-      // Calculate stats
-      const totalTrades = trades.length;
-      const winningTrades = trades.filter(t => t.net_pnl > 0).length;
-      const losingTrades = trades.filter(t => t.net_pnl < 0).length;
-      const winRate = totalTrades > 0 ? (winningTrades / totalTrades) * 100 : 0;
-
-      // Crypto stats
-      const cryptoNetPnL = cryptoTrades.reduce((sum, t) => sum + t.net_pnl, 0);
-      const cryptoPnLs = cryptoTrades.map(t => t.net_pnl);
-      const cryptoBestTrade = cryptoPnLs.length > 0 ? Math.max(...cryptoPnLs) : 0;
-      const cryptoWorstTrade = cryptoPnLs.length > 0 ? Math.min(...cryptoPnLs) : 0;
-
-      // Stock stats
-      const stockNetPnL = stockTrades.reduce((sum, t) => sum + t.net_pnl, 0);
-      const stockPnLs = stockTrades.map(t => t.net_pnl);
-      const stockBestTrade = stockPnLs.length > 0 ? Math.max(...stockPnLs) : 0;
-      const stockWorstTrade = stockPnLs.length > 0 ? Math.min(...stockPnLs) : 0;
-
-      setStats({
-        totalTrades,
-        winningTrades,
-        losingTrades,
-        winRate,
-        cryptoTrades: cryptoTrades.length,
-        cryptoNetPnL,
-        cryptoBestTrade,
-        cryptoWorstTrade,
-        stockTrades: stockTrades.length,
-        stockNetPnL,
-        stockBestTrade,
-        stockWorstTrade
-      });
-    } catch (error) {
-      console.error('Error fetching stats:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchRecentTrades = async () => {
-    try {
       const { data, error } = await supabase
         .from('trading_logs')
-        .select('id, asset_name, asset_type, platform_id, net_pnl, created_at')
-        .order('created_at', { ascending: false })
-        .limit(5);
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
-      if (data) setRecentTrades(data);
+
+      setAllTrades(data || []);
     } catch (error) {
-      console.error('Error fetching recent trades:', error);
+      console.error('Error fetching trades:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  if (loading) {
+  // ==================== FILTERED DATA ====================
+
+  const filteredTrades = useMemo(
+    () => filterTradesByTimeframe(allTrades, selectedTimeframe),
+    [allTrades, selectedTimeframe]
+  );
+
+  const stats = useMemo(() => calculateStats(filteredTrades), [filteredTrades]);
+
+  // Calculate total ROI (if we have initial investment data)
+  const totalInvestment = filteredTrades.reduce((sum, trade) => {
+    return sum + (trade.entry_price * trade.quantity);
+  }, 0);
+  const totalROI = totalInvestment > 0 ? (stats.totalNetPnL / totalInvestment) * 100 : 0;
+
+  // ==================== SHARE HANDLERS ====================
+
+  const handleShareOverallCard = () => {
+    const cardData: ShareableCardData = {
+      assetName: 'Portfolio Summary',
+      assetLogo: '📊',
+      platformName: 'Trading Journal',
+      platformLogo: '💼',
+      netPnL: stats.totalNetPnL,
+      roi: totalROI,
+      assetType: 'crypto', // Default for formatting
+      timestamp: new Date().toISOString(),
+    };
+    setShareCardData(cardData);
+  };
+
+  const handleShareTradeCard = (trade: TradingLog) => {
+    const platform = getPlatformById(trade.platform_id);
+    const roi = (trade.net_pnl / (trade.entry_price * trade.quantity)) * 100;
+
+    const cardData: ShareableCardData = {
+      assetName: trade.asset_name,
+      assetLogo: platform?.logo || '📈',
+      platformName: platform?.name || trade.platform_id,
+      platformLogo: platform?.logo || '💹',
+      netPnL: trade.net_pnl,
+      roi,
+      assetType: trade.asset_type,
+      timestamp: trade.created_at,
+    };
+    setShareCardData(cardData);
+  };
+
+  // ==================== RENDER ====================
+
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
-        <div className="text-white text-xl">Loading...</div>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white p-6">
-      <div className="max-w-7xl mx-auto">
-        
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          {/* User Info Bar */}
-          {user && (
-            <div className="flex items-center justify-between mb-4 p-3 bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-xl">
-              <div className="flex items-center gap-3">
-                {user.user_metadata?.avatar_url && (
-                  <img 
-                    src={user.user_metadata.avatar_url} 
-                    alt="Profile"
-                    className="w-10 h-10 rounded-full border-2 border-emerald-500/30"
-                  />
-                )}
-                <div>
-                  <div className="text-white font-medium text-sm">
-                    {user.user_metadata?.full_name || user.email}
-                  </div>
-                  <div className="text-slate-400 text-xs flex items-center gap-2">
-                    <Mail className="w-3 h-3" />
-                    {user.email}
-                  </div>
-                </div>
-              </div>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleLogout}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm text-slate-300 hover:text-white transition-colors"
-              >
-                Logout
-              </motion.button>
-            </div>
-          )}
+    <div className="space-y-6">
+      {/* Header with Controls */}
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-3xl font-bold text-white mb-2">Trading Summary</h2>
+          <p className="text-slate-400">Filter and analyze your trading performance</p>
+        </div>
 
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-emerald-400 to-cyan-400 bg-clip-text text-transparent mb-2">
-                Trading Dashboard
-              </h1>
-              <p className="text-slate-400 text-lg">
-                Track your trading performance
-              </p>
-            </div>
-            
-            {/* Add Trade Button */}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => router.push('/add-trade')}
-              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-xl font-semibold shadow-lg shadow-emerald-500/50 hover:shadow-emerald-500/70 transition-all"
-            >
-              <PlusCircle className="w-5 h-5" />
-              Add New Trade
-            </motion.button>
-          </div>
-
-          {/* Motivational Quote */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="mt-6 p-4 bg-gradient-to-r from-emerald-500/10 to-cyan-500/10 border border-emerald-500/20 rounded-xl"
+        {/* View Mode Toggle */}
+        <div className="flex items-center gap-3 bg-slate-800/50 rounded-xl p-1">
+          <button
+            onClick={() => setViewMode('minimalist')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+              viewMode === 'minimalist'
+                ? 'bg-emerald-500 text-white shadow-lg'
+                : 'text-slate-400 hover:text-white'
+            }`}
           >
-            <p className="text-emerald-400 text-sm font-medium italic text-center">
-              💡 "{getMotivationalQuote(stats)}"
+            <List className="w-4 h-4" />
+            <span className="hidden sm:inline">Minimalist</span>
+          </button>
+          <button
+            onClick={() => setViewMode('kece_abis')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+              viewMode === 'kece_abis'
+                ? 'bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-lg'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <LayoutGrid className="w-4 h-4" />
+            <span className="hidden sm:inline">Kece Abis</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Timeframe Filter Tabs */}
+      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
+        {TIMEFRAME_OPTIONS.map((option) => (
+          <motion.button
+            key={option.id}
+            onClick={() => setSelectedTimeframe(option.id)}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className={`flex-shrink-0 px-5 py-2.5 rounded-xl font-medium transition-all ${
+              selectedTimeframe === option.id
+                ? 'bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-lg shadow-emerald-500/30'
+                : 'bg-slate-800/50 text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            {option.label}
+          </motion.button>
+        ))}
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Total Net PnL */}
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          className={`relative overflow-hidden rounded-2xl p-6 ${
+            stats.totalNetPnL >= 0
+              ? 'bg-gradient-to-br from-emerald-500/20 to-emerald-500/5'
+              : 'bg-gradient-to-br from-rose-500/20 to-rose-500/5'
+          } border ${
+            stats.totalNetPnL >= 0 ? 'border-emerald-500/30' : 'border-rose-500/30'
+          } backdrop-blur-xl`}
+        >
+          <div className="flex items-start justify-between mb-4">
+            <DollarSign className={`w-8 h-8 ${getPnLColorClass(stats.totalNetPnL)}`} />
+            <button
+              onClick={handleShareOverallCard}
+              className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+              title="Share Summary"
+            >
+              <Share2 className="w-4 h-4 text-slate-400 hover:text-white" />
+            </button>
+          </div>
+          <h3 className="text-slate-400 text-sm mb-2">Total Net PnL</h3>
+          <p className={`text-3xl font-bold ${getPnLColorClass(stats.totalNetPnL)}`}>
+            {formatCurrency(stats.totalNetPnL, 'crypto')}
+          </p>
+          {stats.totalTrades > 0 && (
+            <p className="text-slate-500 text-xs mt-2">
+              Avg: {formatCurrency(stats.avgPnL, 'crypto')} per trade
             </p>
-          </motion.div>
+          )}
         </motion.div>
 
-        {/* Stats Cards */}
-        {stats && stats.totalTrades > 0 ? (
-          <>
-            {/* Overall Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              {/* Total Trades */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-2xl p-6"
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-3 bg-blue-500/10 rounded-xl">
-                    <Activity className="w-6 h-6 text-blue-400" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-slate-300">Total Trades</h3>
-                </div>
-                <div className="text-4xl font-bold text-white mb-2">{stats.totalTrades}</div>
-                <div className="text-sm text-slate-400">
-                  {stats.winningTrades} wins / {stats.losingTrades} losses
-                </div>
-              </motion.div>
+        {/* Win Rate */}
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          className="relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-blue-500/20 to-blue-500/5 border border-blue-500/30 backdrop-blur-xl"
+        >
+          <Trophy className="w-8 h-8 text-blue-400 mb-4" />
+          <h3 className="text-slate-400 text-sm mb-2">Win Rate</h3>
+          <p className={`text-3xl font-bold ${stats.winRate >= 50 ? 'text-emerald-400' : 'text-amber-400'}`}>
+            {stats.winRate.toFixed(1)}%
+          </p>
+          <p className="text-slate-500 text-xs mt-2">
+            {stats.winningTrades}W / {stats.losingTrades}L
+          </p>
+        </motion.div>
 
-              {/* Win Rate */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-2xl p-6"
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-3 bg-emerald-500/10 rounded-xl">
-                    <Award className="w-6 h-6 text-emerald-400" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-slate-300">Win Rate</h3>
-                </div>
-                <div className={`text-4xl font-bold mb-2 ${stats.winRate >= 50 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                  {formatPercentage(stats.winRate)}
-                </div>
-                <div className="text-sm text-slate-400">
-                  {stats.winRate >= 50 ? 'Excellent performance!' : 'Keep improving!'}
-                </div>
-              </motion.div>
+        {/* Total ROI */}
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          className={`relative overflow-hidden rounded-2xl p-6 ${
+            totalROI >= 0
+              ? 'bg-gradient-to-br from-purple-500/20 to-purple-500/5 border-purple-500/30'
+              : 'bg-gradient-to-br from-orange-500/20 to-orange-500/5 border-orange-500/30'
+          } border backdrop-blur-xl`}
+        >
+          <Activity className={`w-8 h-8 ${totalROI >= 0 ? 'text-purple-400' : 'text-orange-400'} mb-4`} />
+          <h3 className="text-slate-400 text-sm mb-2">Total ROI</h3>
+          <p className={`text-3xl font-bold ${getPnLColorClass(totalROI)}`}>
+            {formatPercentage(totalROI)}
+          </p>
+          <p className="text-slate-500 text-xs mt-2">
+            Return on Investment
+          </p>
+        </motion.div>
 
-              {/* Combined P&L */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-2xl p-6"
-              >
-                <div className="flex items-center gap-3 mb-4">
-                  <div className={`p-3 rounded-xl ${
-                    (stats.cryptoNetPnL + stats.stockNetPnL) > 0 
-                      ? 'bg-emerald-500/10' 
-                      : 'bg-rose-500/10'
-                  }`}>
-                    <BarChart3 className={`w-6 h-6 ${
-                      (stats.cryptoNetPnL + stats.stockNetPnL) > 0 
-                        ? 'text-emerald-400' 
-                        : 'text-rose-400'
-                    }`} />
-                  </div>
-                  <h3 className="text-lg font-semibold text-slate-300">Combined P&L</h3>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-400">Crypto:</span>
-                    <span className={`font-semibold ${getPnLColorClass(stats.cryptoNetPnL)}`}>
-                      {formatCurrency(stats.cryptoNetPnL, 'crypto')}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-400">Stock:</span>
-                    <span className={`font-semibold ${getPnLColorClass(stats.stockNetPnL)}`}>
-                      {formatCurrency(stats.stockNetPnL, 'stock')}
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-
-            {/* Detailed Stats - Crypto & Stock */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-              {/* Crypto Stats */}
-              {stats.cryptoTrades > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.4 }}
-                  className="bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 backdrop-blur-xl border border-emerald-500/30 rounded-2xl p-6"
-                >
-                  <h3 className="text-xl font-bold text-emerald-400 mb-4 flex items-center gap-2">
-                    <DollarSign className="w-6 h-6" />
-                    Crypto Trading (USD)
-                  </h3>
-                  
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center p-3 bg-slate-900/30 rounded-lg">
-                      <span className="text-slate-300">Total Trades</span>
-                      <span className="font-bold text-white">{stats.cryptoTrades}</span>
-                    </div>
-                    
-                    <div className="flex justify-between items-center p-3 bg-slate-900/30 rounded-lg">
-                      <span className="text-slate-300">Net P&L</span>
-                      <span className={`font-bold ${getPnLColorClass(stats.cryptoNetPnL)}`}>
-                        {formatCurrency(stats.cryptoNetPnL, 'crypto')}
-                      </span>
-                    </div>
-                    
-                    <div className="flex justify-between items-center p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
-                      <span className="text-emerald-400 flex items-center gap-2">
-                        <TrendingUp className="w-4 h-4" />
-                        Best Trade
-                      </span>
-                      <span className="font-bold text-emerald-400">
-                        {formatCurrency(stats.cryptoBestTrade, 'crypto')}
-                      </span>
-                    </div>
-                    
-                    <div className="flex justify-between items-center p-3 bg-rose-500/10 rounded-lg border border-rose-500/20">
-                      <span className="text-rose-400 flex items-center gap-2">
-                        <TrendingDown className="w-4 h-4" />
-                        Worst Trade
-                      </span>
-                      <span className="font-bold text-rose-400">
-                        {formatCurrency(stats.cryptoWorstTrade, 'crypto')}
-                      </span>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-
-              {/* Stock Stats */}
-              {stats.stockTrades > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.5 }}
-                  className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 backdrop-blur-xl border border-blue-500/30 rounded-2xl p-6"
-                >
-                  <h3 className="text-xl font-bold text-blue-400 mb-4 flex items-center gap-2">
-                    <BarChart3 className="w-6 h-6" />
-                    Stock Trading (IDR)
-                  </h3>
-                  
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center p-3 bg-slate-900/30 rounded-lg">
-                      <span className="text-slate-300">Total Trades</span>
-                      <span className="font-bold text-white">{stats.stockTrades}</span>
-                    </div>
-                    
-                    <div className="flex justify-between items-center p-3 bg-slate-900/30 rounded-lg">
-                      <span className="text-slate-300">Net P&L</span>
-                      <span className={`font-bold ${getPnLColorClass(stats.stockNetPnL)}`}>
-                        {formatCurrency(stats.stockNetPnL, 'stock')}
-                      </span>
-                    </div>
-                    
-                    <div className="flex justify-between items-center p-3 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
-                      <span className="text-emerald-400 flex items-center gap-2">
-                        <TrendingUp className="w-4 h-4" />
-                        Best Trade
-                      </span>
-                      <span className="font-bold text-emerald-400">
-                        {formatCurrency(stats.stockBestTrade, 'stock')}
-                      </span>
-                    </div>
-                    
-                    <div className="flex justify-between items-center p-3 bg-rose-500/10 rounded-lg border border-rose-500/20">
-                      <span className="text-rose-400 flex items-center gap-2">
-                        <TrendingDown className="w-4 h-4" />
-                        Worst Trade
-                      </span>
-                      <span className="font-bold text-rose-400">
-                        {formatCurrency(stats.stockWorstTrade, 'stock')}
-                      </span>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </div>
-
-            {/* Recent Trades */}
-            {recentTrades.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
-                className="bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-2xl p-6"
-              >
-                <h3 className="text-xl font-bold text-slate-100 mb-4 flex items-center gap-2">
-                  <Calendar className="w-6 h-6 text-slate-400" />
-                  Recent Trades
-                </h3>
-                
-                <div className="space-y-3">
-                  {recentTrades.map((trade) => (
-                    <div
-                      key={trade.id}
-                      className="flex items-center justify-between p-4 bg-slate-800/30 rounded-xl hover:bg-slate-800/50 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`px-2 py-1 rounded text-xs font-medium ${
-                          trade.asset_type === 'crypto'
-                            ? 'bg-emerald-500/10 text-emerald-400'
-                            : 'bg-blue-500/10 text-blue-400'
-                        }`}>
-                          {trade.asset_type.toUpperCase()}
-                        </div>
-                        <div>
-                          <div className="font-semibold text-white">{trade.asset_name}</div>
-                          <div className="text-xs text-slate-400 capitalize">
-                            {trade.platform_id.replace('_', ' ')} • {new Date(trade.created_at).toLocaleDateString('id-ID')}
-                          </div>
-                        </div>
-                      </div>
-                      <div className={`font-bold ${getPnLColorClass(trade.net_pnl)}`}>
-                        {formatCurrency(trade.net_pnl, trade.asset_type)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </motion.div>
-            )}
-          </>
-        ) : (
-          /* Empty State */
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-20"
-          >
-            <div className="mb-6">
-              <BarChart3 className="w-24 h-24 mx-auto text-slate-700" />
-            </div>
-            <h2 className="text-2xl font-bold text-slate-300 mb-2">
-              No Trades Yet
-            </h2>
-            <p className="text-slate-500 mb-8">
-              Start tracking your trades to see your performance metrics
-            </p>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => router.push('/add-trade')}
-              className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-xl font-semibold text-lg shadow-lg shadow-emerald-500/50 hover:shadow-emerald-500/70 transition-all"
-            >
-              <PlusCircle className="w-6 h-6" />
-              Add Your First Trade
-            </motion.button>
-          </motion.div>
-        )}
+        {/* Total Trades */}
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          className="relative overflow-hidden rounded-2xl p-6 bg-gradient-to-br from-cyan-500/20 to-cyan-500/5 border border-cyan-500/30 backdrop-blur-xl"
+        >
+          <Calendar className="w-8 h-8 text-cyan-400 mb-4" />
+          <h3 className="text-slate-400 text-sm mb-2">Total Trades</h3>
+          <p className="text-3xl font-bold text-cyan-400">{stats.totalTrades}</p>
+          <p className="text-slate-500 text-xs mt-2">
+            {selectedTimeframe === 'all_time' 
+              ? 'All time record' 
+              : TIMEFRAME_OPTIONS.find(o => o.id === selectedTimeframe)?.label}
+          </p>
+        </motion.div>
       </div>
+
+      {/* Trade List */}
+      {viewMode === 'minimalist' ? (
+        <MinimalistTradeList 
+          trades={filteredTrades} 
+          onShareTrade={handleShareTradeCard}
+        />
+      ) : (
+        <KeceAbisTradeGrid 
+          trades={filteredTrades} 
+          onShareTrade={handleShareTradeCard}
+        />
+      )}
+
+      {/* Shareable Card Modal */}
+      <AnimatePresence>
+        {shareCardData && (
+          <ShareablePnLCard
+            data={shareCardData}
+            onClose={() => setShareCardData(null)}
+          />
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ==================== MINIMALIST VIEW ====================
+
+function MinimalistTradeList({ 
+  trades, 
+  onShareTrade 
+}: { 
+  trades: TradingLog[];
+  onShareTrade: (trade: TradingLog) => void;
+}) {
+  if (trades.length === 0) {
+    return (
+      <div className="text-center py-12 text-slate-500">
+        <Activity className="w-16 h-16 mx-auto mb-4 opacity-30" />
+        <p>No trades found for this period</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-2xl overflow-hidden">
+      <table className="w-full">
+        <thead>
+          <tr className="border-b border-slate-800">
+            <th className="text-left p-4 text-slate-400 text-sm font-medium">Asset</th>
+            <th className="text-left p-4 text-slate-400 text-sm font-medium">Platform</th>
+            <th className="text-right p-4 text-slate-400 text-sm font-medium">Entry</th>
+            <th className="text-right p-4 text-slate-400 text-sm font-medium">Exit</th>
+            <th className="text-right p-4 text-slate-400 text-sm font-medium">Net PnL</th>
+            <th className="text-right p-4 text-slate-400 text-sm font-medium">ROI</th>
+            <th className="text-right p-4 text-slate-400 text-sm font-medium">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {trades.map((trade) => {
+            const platform = getPlatformById(trade.platform_id);
+            const roi = (trade.net_pnl / (trade.entry_price * trade.quantity)) * 100;
+
+            return (
+              <motion.tr
+                key={trade.id}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="border-b border-slate-800/50 hover:bg-slate-800/30 transition-colors"
+              >
+                <td className="p-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">{platform?.logo}</span>
+                    <span className="text-white font-medium">{trade.asset_name}</span>
+                  </div>
+                </td>
+                <td className="p-4 text-slate-400">{platform?.name}</td>
+                <td className="p-4 text-right text-slate-300">
+                  {formatCurrency(trade.entry_price, trade.asset_type)}
+                </td>
+                <td className="p-4 text-right text-slate-300">
+                  {formatCurrency(trade.exit_price, trade.asset_type)}
+                </td>
+                <td className={`p-4 text-right font-bold ${getPnLColorClass(trade.net_pnl)}`}>
+                  {formatCurrency(trade.net_pnl, trade.asset_type)}
+                </td>
+                <td className={`p-4 text-right font-semibold ${getPnLColorClass(roi)}`}>
+                  {formatPercentage(roi)}
+                </td>
+                <td className="p-4 text-right">
+                  <button
+                    onClick={() => onShareTrade(trade)}
+                    className="p-2 hover:bg-emerald-500/20 rounded-lg transition-colors"
+                    title="Share this trade"
+                  >
+                    <Share2 className="w-4 h-4 text-slate-400 hover:text-emerald-400" />
+                  </button>
+                </td>
+              </motion.tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ==================== KECE ABIS VIEW ====================
+
+function KeceAbisTradeGrid({ 
+  trades, 
+  onShareTrade 
+}: { 
+  trades: TradingLog[];
+  onShareTrade: (trade: TradingLog) => void;
+}) {
+  if (trades.length === 0) {
+    return (
+      <div className="text-center py-12 text-slate-500">
+        <Activity className="w-16 h-16 mx-auto mb-4 opacity-30" />
+        <p>No trades found for this period</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {trades.map((trade) => {
+        const platform = getPlatformById(trade.platform_id);
+        const roi = (trade.net_pnl / (trade.entry_price * trade.quantity)) * 100;
+        const isProfitable = trade.net_pnl >= 0;
+
+        return (
+          <motion.div
+            key={trade.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileHover={{ scale: 1.02, y: -5 }}
+            className={`relative overflow-hidden rounded-2xl p-6 ${
+              isProfitable
+                ? 'bg-gradient-to-br from-emerald-500/10 to-emerald-500/5'
+                : 'bg-gradient-to-br from-rose-500/10 to-rose-500/5'
+            } border ${
+              isProfitable ? 'border-emerald-500/30' : 'border-rose-500/30'
+            } backdrop-blur-xl shadow-lg hover:shadow-2xl transition-all`}
+          >
+            {/* Header */}
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <span className="text-3xl">{platform?.logo}</span>
+                <div>
+                  <h3 className="text-white font-bold text-lg">{trade.asset_name}</h3>
+                  <p className="text-slate-400 text-xs">{platform?.name}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => onShareTrade(trade)}
+                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+              >
+                <Share2 className="w-4 h-4 text-slate-400 hover:text-white" />
+              </button>
+            </div>
+
+            {/* Net PnL */}
+            <div className="mb-4">
+              <p className="text-slate-400 text-xs mb-1">Net PnL</p>
+              <div className={`text-3xl font-black ${getPnLColorClass(trade.net_pnl)} flex items-center gap-2`}>
+                {isProfitable ? <TrendingUp className="w-6 h-6" /> : <TrendingDown className="w-6 h-6" />}
+                {formatCurrency(trade.net_pnl, trade.asset_type)}
+              </div>
+            </div>
+
+            {/* ROI Badge */}
+            <div className="mb-4">
+              <span
+                className={`inline-block px-4 py-2 rounded-full text-sm font-bold ${
+                  isProfitable
+                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50'
+                    : 'bg-rose-500/20 text-rose-400 border border-rose-500/50'
+                }`}
+              >
+                {isProfitable ? '+' : ''}{formatPercentage(roi)} ROI
+              </span>
+            </div>
+
+            {/* Trade Details */}
+            <div className="grid grid-cols-2 gap-3 text-sm">
+              <div className="bg-slate-900/50 rounded-lg p-3">
+                <p className="text-slate-500 text-xs mb-1">Entry</p>
+                <p className="text-white font-semibold">{formatCurrency(trade.entry_price, trade.asset_type)}</p>
+              </div>
+              <div className="bg-slate-900/50 rounded-lg p-3">
+                <p className="text-slate-500 text-xs mb-1">Exit</p>
+                <p className="text-white font-semibold">{formatCurrency(trade.exit_price, trade.asset_type)}</p>
+              </div>
+            </div>
+
+            {/* Date */}
+            <div className="mt-4 pt-4 border-t border-slate-700/50">
+              <p className="text-slate-500 text-xs">
+                {new Date(trade.created_at).toLocaleDateString('id-ID', {
+                  day: 'numeric',
+                  month: 'short',
+                  year: 'numeric',
+                })}
+              </p>
+            </div>
+
+            {/* Decorative Gradient */}
+            <div className={`absolute top-0 right-0 w-32 h-32 ${
+              isProfitable 
+                ? 'bg-gradient-to-br from-emerald-500/20' 
+                : 'bg-gradient-to-br from-rose-500/20'
+            } to-transparent rounded-full blur-2xl -z-10`}></div>
+          </motion.div>
+        );
+      })}
     </div>
   );
 }

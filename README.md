@@ -1,306 +1,383 @@
-# 📊 Advanced Trading Journal & Portfolio Tracker
+# 📊 Ultimate Trading Journal v3.0.0
 
-> Professional trading journal with automated fee calculation, dual currency stats, and email authentication
+<div align="center">
 
-[![Next.js](https://img.shields.io/badge/Next.js-14-black?style=for-the-badge&logo=next.js)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-[![Supabase](https://img.shields.io/badge/Supabase-Auth-green?style=for-the-badge&logo=supabase)](https://supabase.com/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
+**Track, Analyze, and Master Your Trading Psychology** 🧠📈
 
-## ✨ Features
+Production-grade trading journal with **Psychology Tags**, **Mistake Cost Analysis**, **Trading Hours Optimization**, and **Expected Value Calculation**.
 
-### 🔐 **Authentication**
+![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue?logo=typescript)
+![Tailwind](https://img.shields.io/badge/Tailwind-3.4-38bdf8?logo=tailwind-css)
+![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase)
 
-- Email/Password login (100% FREE)
-- Secure session management via Supabase Auth
-- Protected routes & user profiles
+[Quick Start](#-quick-start) • [Features](#-features) • [Demo](#-demo) • [Docs](#-documentation)
 
-### 📈 **Trading Dashboard**
-
-- **Dual Currency System:**
-  - Crypto trades in **USD** ($)
-  - Stock trades in **IDR** (Rp)
-- Real-time P&L calculations
-- Win rate tracking
-- Best/Worst trade analytics
-
-### 💰 **Automated Fee Calculation**
-
-- **13 Trading Platforms Supported:**
-  - **Stocks (6):** Ajaib, Stockbit, IPOT, Mirae Asset, Gotrade, Interactive Brokers
-  - **Crypto (7):** Binance, Bybit, Tokocrypto, Indodax, OKX, Reku, Pintu
-- Platform-specific fee structures (2026 rates)
-- Automatic fee deduction from P&L
-
-### 📊 **Stock Lot System**
-
-- Indonesian stock market lot conversion (1 lot = 100 shares)
-- Automatic calculation for lot-based trades
-- Clear display: "10 lot (1,000 lembar)"
-
-### 🎯 **Live Preview**
-
-- Real-time P&L calculation as you type
-- Instant fee calculation
-- ROI percentage display
-- Color-coded profit/loss indicators
-
-### 💡 **Motivational Quotes**
-
-- Dynamic quotes based on performance
-- Contextual messages for different win rates
-- Encouraging feedback system
-
-### 📱 **Modern UI/UX**
-
-- Premium dark mode design
-- Framer Motion animations
-- Responsive layout (mobile, tablet, desktop)
-- Glassmorphism effects
+</div>
 
 ---
 
-## 🚀 Quick Start
+## ✨ **What's New in v3.0.0**
 
-### Prerequisites
+🧠 **Psychology Tags** - Track FOMO, Discipline, Revenge Trading  
+📊 **Mistake Cost Widget** - See how much emotional trading costs you  
+⏰ **Trading Hours Analytics** - Find your best performing hours  
+💰 **Expected Value (EV)** - Know if your strategy is profitable long-term
 
-- Node.js 18+
-- Supabase Account (free tier)
-- Git
+[See Full Changelog →](V3_WHATS \_NEW.md)
 
-### Installation
+---
+
+## 🎯 **Features**
+
+<table>
+<tr>
+<td width="50%">
+
+### **Core Features**
+
+- ✅ Add trades (Crypto & Stocks)
+- ✅ Automated fee calculation (14+ platforms)
+- ✅ Live PnL preview
+- ✅ Real-time ROI calculation
+- ✅ Supabase authentication
+- ✅ Row-level security (RLS)
+
+</td>
+<td>
+
+### **Advanced Analytics** ⭐
+
+- ✨ **Psychology tags** (12 tags)
+- ✨ **Mistake cost analysis**
+- ✨ **Trading hours stats**
+- ✨ **Expected value (EV)**
+- ✅ Timeframe filtering (7 options)
+- ✅ Win rate tracking
+
+</td>
+</tr>
+<tr>
+<td>
+
+### **User Experience**
+
+- ✅ Dual-mode UI (Minimalist/Kece Abis)
+- ✅ Shareable PnL cards
+- ✅ Dark mode design
+- ✅ Responsive (mobile-ready)
+- ✅ Smooth animations (Framer Motion)
+- ✅ Real-time updates
+
+</td>
+<td>
+
+### **Platforms Supported**
+
+**Crypto:** Binance, Bybit, Tokocrypto, Indodax, OKX, Reku, Pintu
+
+**Stocks:** Ajaib, Stockbit, IPOT, Mirae Asset, Gotrade, Interactive Brokers
+
+</td>
+</tr>
+</table>
+
+---
+
+## 🚀 **Quick Start**
+
+### **1. Clone & Install**
 
 ```bash
-# 1. Clone repository
-git clone https://github.com/naidrahiqa/Trading-Journal.git
-cd Trading-Journal
-
-# 2. Install dependencies
+git clone https://github.com/yourusername/trading-journal.git
+cd trading-journal
 npm install
+```
 
-# 3. Setup environment variables
-cp .env.example .env.local
+### **2. Setup Supabase**
 
-# Edit .env.local with your Supabase credentials:
-# NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-# NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+1. Create a project at [supabase.com](https://supabase.com)
+2. Run migrations:
+   - `migrations/001_create_trading_logs.sql` (Required)
+   - `migrations/003_psychology_tags.sql` (For psychology features)
+3. Get your API keys from Settings → API
 
-# 4. Run database migration
-# Go to Supabase SQL Editor and run: migrations/001_create_trading_logs.sql
+### **3. Environment Variables**
 
-# 5. Start development server
+Create `.env.local`:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+```
+
+### **4. Run Development Server**
+
+```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000)
+Visit: **http://localhost:3000** 🎉
 
 ---
 
-## 📚 Documentation
+## 🧠 **Psychology Tags**
 
-- **[QUICKSTART.md](QUICKSTART.md)** - 10-minute setup guide
-- **[INTEGRATION.md](INTEGRATION.md)** - Advanced integration
-- **[PROJECT_SUMMARY.md](PROJECT_SUMMARY.md)** - Architecture overview
-- **[EMAIL_LOGIN_FIX.md](EMAIL_LOGIN_FIX.md)** - Auth troubleshooting
-- **[CURRENCY_UPDATE.md](CURRENCY_UPDATE.md)** - Dual currency system
-- **[LOT_SYSTEM.md](LOT_SYSTEM.md)** - Stock lot conversion
+Track the psychology behind every trade:
 
----
+| Category             | Tags                                                  |
+| -------------------- | ----------------------------------------------------- |
+| **Positive** (Green) | 🎯 Disciplined, 📋 Planned, ⏳ Patient, 📊 Analytical |
+| **Negative** (Red)   | 😱 FOMO, 😤 Revenge, 🤑 Greed, 😨 Fear, ⚡ Impulsive  |
+| **Neutral**          | 🤔 Cautious                                           |
 
-## 🛠️ Tech Stack
-
-### Frontend
-
-- **Next.js 14** - React framework with App Router
-- **TypeScript** - Type safety
-- **Tailwind CSS** - Utility-first CSS
-- **Framer Motion** - Animations
-- **Lucide React** - Icon library
-
-### Backend
-
-- **Supabase** - PostgreSQL database + Auth
-- **Row Level Security (RLS)** - Data protection
-- **Real-time subscriptions** - Live updates
+**Mistake Cost Analysis** shows you exactly how much FOMO and Revenge Trading are costing you! 💸
 
 ---
 
-## 📊 Database Schema
+## 📊 **Analytics Dashboard**
+
+### **Mistake Cost Widget**
+
+```
+⚠️ Mistake Cost Analysis  [5 mistakes]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Total Cost: -$1,234.56
+💡 You could have saved $1,234.56 with discipline
+
+😱 FOMO: 3 trades → -$800
+😤 Revenge: 2 trades → -$434.56
+
+🎯 Disciplined: 10 trades | 80% win → +$2,345
+```
+
+### **Trading Hours**
+
+```
+Your Best Hours:
+1. 09:00-10:00 │ Win Rate: 75% │ +$500 ✅
+2. 14:00-15:00 │ Win Rate: 70% │ +$350 ✅
+
+Your Worst Hours:
+1. 23:00-00:00 │ Win Rate: 20% │ -$450 ❌
+```
+
+### **Expected Value**
+
+```
+Strategy EV: +$58 per trade ✅
+Win Rate: 60% | Avg Win: $150 | Avg Loss: -$80
+```
+
+If EV > 0 → Keep executing! 🚀
+
+---
+
+## 🎨 **UI Modes**
+
+### **Minimalist Mode** - Clean data table
+
+| Asset    | Platform | P&L   | ROI   | Tags |
+| -------- | -------- | ----- | ----- | ---- |
+| BTC/USDT | Binance  | +$199 | +4.4% | 🎯📋 |
+
+### **Kece Abis Mode** - Rich animated cards
+
+- Glassmorphism backgrounds
+- Platform logos
+- Large PnL displays
+- Psychology tag chips
+- Hover animations
+
+---
+
+## 📁 **Project Structure**
+
+```
+src/
+├── app/                    # Next.js pages
+├── components/
+│   ├── MainDashboard.tsx          # Main container
+│   ├── TradingDashboard.tsx       # Add trade form
+│   ├── TradingSummary.tsx         # Dashboard with filtering
+│   ├── ShareablePnLCard.tsx      # Social share cards
+│   └── MistakeCostWidget.tsx     # ✨ Mistake analysis
+├── config/
+│   ├── platformFees.ts           # Fee calculations
+│   └── psychologyTags.ts         # ✨ Tag definitions
+├── types/trading.ts              # TypeScript types
+└── utils/tradingCalculations.ts  # PnL logic
+
+migrations/
+├── 001_create_trading_logs.sql   # Initial schema
+├── 002_enhanced_features.sql     # Optional indexes
+└── 003_psychology_tags.sql       # ✨ Psychology features
+```
+
+---
+
+## 🗄️ **Database Schema**
 
 ```sql
-trading_logs (
-  id UUID PRIMARY KEY,
-  user_id UUID REFERENCES auth.users,
-  asset_name TEXT,
-  asset_type ENUM('crypto', 'stock'),
-  platform_id TEXT,
-  order_type ENUM('long', 'short'),
-  entry_price NUMERIC,
-  exit_price NUMERIC,
-  quantity NUMERIC,
-  gross_pnl NUMERIC,
-  total_fee NUMERIC,
-  net_pnl NUMERIC,
-  notes TEXT,
-  created_at TIMESTAMP,
-  updated_at TIMESTAMP
-)
-```
+CREATE TABLE trading_logs (
+    id UUID PRIMARY KEY,
+    user_id UUID REFERENCES auth.users,
 
-**Includes:**
+    asset_name TEXT,
+    asset_type TEXT, -- 'crypto' or 'stock'
+    platform_id TEXT,
 
-- 5 performance indexes
-- 4 RLS policies (view, insert, update, delete)
-- Auto-update trigger
-- Analytics view (`trading_stats`)
+    order_type TEXT, -- 'long' or 'short'
+    entry_price NUMERIC,
+    exit_price NUMERIC,
+    quantity NUMERIC,
 
----
+    gross_pnl NUMERIC,
+    total_fee NUMERIC,
+    net_pnl NUMERIC,
 
-## 🎨 Screenshots
+    tags TEXT[],  -- ✨ Psychology tags
+    notes TEXT,
 
-### Dashboard Summary
-
-- Total trades, Win rate, Combined P&L
-- Separate crypto (USD) and stock (IDR) stats
-- Recent trades list
-
-### Add Trade Form
-
-- Platform selection with brand logos
-- Crypto/Stock toggle
-- Long/Short order types
-- Live P&L preview card
-
-### Login Page
-
-- Email/Password authentication
-- Clean, professional design
-- Feature highlights
-
----
-
-## 💡 Key Features Explained
-
-### Dual Currency System
-
-```typescript
-// Crypto → USD
-formatCurrency(11650.75, "crypto"); // "$11,650.75"
-
-// Stock → IDR
-formatCurrency(11650750, "stock"); // "Rp11.650.750"
-```
-
-### Lot System for Stocks
-
-```typescript
-// User input: 10 lot
-// System calculates: 10 × 100 = 1,000 shares
-// Display: "10 lot (1,000 lembar)"
-```
-
-### Automated Fee Calculation
-
-```typescript
-// Example: Bitcoin on Binance (0.1% fee)
-Entry: $50,000 × 0.5 BTC = $25,000
-Exit:  $51,000 × 0.5 BTC = $25,500
-Gross P&L: $500
-Buy Fee: $25 (0.1%)
-Sell Fee: $25.50 (0.1%)
-Net P&L: $449.50
+    created_at TIMESTAMPTZ,
+    updated_at TIMESTAMPTZ
+);
 ```
 
 ---
 
-## 🔐 Security
+## 🔧 **Tech Stack**
 
-- ✅ Row Level Security (RLS) enabled
-- ✅ Users only see their own data
-- ✅ Authentication required for all operations
-- ✅ SQL injection protection (parameterized queries)
-- ✅ Full TypeScript type safety
+- **Framework:** Next.js 14 (App Router)
+- **Language:** TypeScript 5.3
+- **Styling:** Tailwind CSS 3.4
+- **Animation:** Framer Motion
+- **Database:** Supabase (PostgreSQL)
+- **Auth:** Supabase Auth
+- **Date Utils:** date-fns
+- **Image Export:** html2canvas
+- **Icons:** Lucide React
 
 ---
 
-## 🚀 Deployment
+## 📚 **Documentation**
 
-### Vercel (Recommended)
+- **[Ultimate Guide](ULTIMATE_GUIDE.md)** - Complete v3.0 documentation
+- **[What's New](V3_WHATS_NEW.md)** - v3.0 changelog
+- **[Quick Start](QUICKSTART.md)** - Setup guide
+- **[Architecture](ARCHITECTURE.md)** - Technical details
+- **[Troubleshooting](TROUBLESHOOTING.md)** - Common issues
+- **[Advanced Features](ADVANCED_FEATURES.md)** - v2.0 features
+
+---
+
+## 🎯 **Use Cases**
+
+### **For Day Traders:**
+
+- Track intraday psychology
+- Find best trading hours
+- Monitor FOMO trades
+- Calculate true win rate
+
+### **For Swing Traders:**
+
+- Long-term EV analysis
+- Strategy profitability
+- Fee impact on returns
+- Timeframe comparisons
+
+### **For All Traders:**
+
+- Identify emotional patterns
+- Reduce mistake costs
+- Improve discipline
+- Data-driven decisions
+
+---
+
+## 🚀 **Deployment**
+
+### **Vercel (Recommended)**
 
 ```bash
-# 1. Install Vercel CLI
-npm i -g vercel
+# 1. Push to GitHub
+git add .
+git commit -m "Initial commit"
+git push
 
-# 2. Deploy
+# 2. Import to Vercel
 vercel
 
 # 3. Add environment variables in Vercel dashboard
+NEXT_PUBLIC_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+# 4. Deploy
+vercel --prod
 ```
 
-### Environment Variables
+### **Other Options:**
 
-```env
-NEXT_PUBLIC_SUPABASE_URL=your_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_key
-```
-
----
-
-## 📈 Roadmap
-
-- [ ] Email notifications (weekly summary)
-- [ ] Charts & visualizations
-- [ ] Trade history table with filters
-- [ ] Export to CSV/Excel
-- [ ] Mobile app (React Native)
-- [ ] Advanced analytics (Sharpe ratio, etc.)
-- [ ] Multi-currency support
-- [ ] Tax reporting
+- Netlify
+- Railway
+- Docker
+- Self-hosted
 
 ---
 
-## 🤝 Contributing
+## 🤝 **Contributing**
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions welcome! Please:
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
----
-
-## 📝 License
-
-This project is open source and available under the [MIT License](LICENSE).
+1. Fork the repo
+2. Create feature branch (`git checkout -b feature/amazing`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing`)
+5. Open Pull Request
 
 ---
 
-## 👨‍💻 Author
+## 📝 **License**
 
-**Naidra Hiqa**
-
-- GitHub: [@naidrahiqa](https://github.com/naidrahiqa)
+MIT License - see [LICENSE](LICENSE) file
 
 ---
 
-## 🙏 Acknowledgments
+## 🙏 **Acknowledgments**
 
-- Built with [Next.js](https://nextjs.org/)
-- Database & Auth by [Supabase](https://supabase.com/)
-- UI components inspired by modern fintech applications
-- Fee data based on 2026 platform rates
+Built with:
+
+- [Next.js](https://nextjs.org)
+- [Supabase](https://supabase.com)
+- [Tailwind CSS](https://tailwindcss.com)
+- [Framer Motion](https://www.framer.com/motion)
 
 ---
 
-## 📞 Support
+## 📞 **Support**
 
-If you have any questions or run into issues:
+- 📧 Email: support@tradingjournal.com
+- 💬 Discord: [Join our community](https://discord.gg/tradingjournal)
+- 🐛 Issues: [GitHub Issues](https://github.com/yourusername/trading-journal/issues)
 
-1. Check the [documentation](docs/)
-2. Search [existing issues](https://github.com/naidrahiqa/Trading-Journal/issues)
-3. Open a [new issue](https://github.com/naidrahiqa/Trading-Journal/issues/new)
+---
+
+## 🗺️ **Roadmap**
+
+### **v3.1** (Coming Soon)
+
+- [ ] Complete Psychology Tag UI
+- [ ] Trading Hours Chart
+- [ ] Tag-based filtering
+- [ ] Psychology trends
+
+### **v4.0** (Future)
+
+- [ ] Custom tags
+- [ ] Strategy backtesting
+- [ ] Social features
+- [ ] Mobile app
 
 ---
 
@@ -308,6 +385,14 @@ If you have any questions or run into issues:
 
 **⭐ Star this repo if you find it helpful!**
 
-Made with ❤️ by [Naidra Hiqa](https://github.com/naidrahiqa)
+Made with ❤️ for traders, by traders
+
+**[Get Started →](QUICKSTART.md)** | **[View Demo →](#)** | **[Documentation →](ULTIMATE_GUIDE.md)**
 
 </div>
+
+---
+
+**Version:** 3.0.0-alpha  
+**Status:** Active Development 🚧  
+**Last Updated:** January 9, 2026

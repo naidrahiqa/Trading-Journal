@@ -61,7 +61,8 @@ export default function TradingDashboard() {
     entryPrice: '',
     exitPrice: '',
     quantity: '',
-    notes: ''
+    notes: '',
+    tags: []
   });
 
   // ==================== COMPUTED VALUES ====================
@@ -165,7 +166,8 @@ export default function TradingDashboard() {
         gross_pnl: calculation.grossPnL,
         total_fee: calculation.fees.totalFee,
         net_pnl: calculation.netPnL,
-        notes: formData.notes.trim() || null
+        notes: formData.notes.trim() || null,
+        tags: formData.tags.length > 0 ? formData.tags : null
       };
 
       // Insert into Supabase
@@ -188,7 +190,8 @@ export default function TradingDashboard() {
           entryPrice: '',
           exitPrice: '',
           quantity: '',
-          notes: ''
+          notes: '',
+          tags: []
         });
         setSubmitStatus('idle');
       }, 2000);

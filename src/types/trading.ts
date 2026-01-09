@@ -71,6 +71,7 @@ export interface TradingLog {
 
   // Additional Information
   notes?: string;
+  tags?: string[]; // Psychology tags
 
   // Timestamps
   created_at: string;
@@ -88,6 +89,7 @@ export interface TradingFormState {
   exitPrice: string;
   quantity: string;
   notes: string;
+  tags: string[]; // Psychology tags
 }
 
 // ==================== CALCULATION RESULTS ====================
@@ -148,4 +150,103 @@ export interface CreateTradePayload {
   total_fee: number;
   net_pnl: number;
   notes?: string;
+}
+
+// ==================== TIMEFRAME FILTERING ====================
+
+export type TimeframeFilter = 
+  | 'last_trade'
+  | '7d'
+  | '1m'
+  | '3m'
+  | '4m'
+  | '12m'
+  | 'all_time';
+
+export interface TimeframeOption {
+  id: TimeframeFilter;
+  label: string;
+  daysBack?: number; // undefined for 'all_time'
+}
+
+// ==================== VIEW MODES ====================
+
+export type ViewMode = 'minimalist' | 'kece_abis';
+
+// ==================== SHAREABLE CARD ====================
+
+export interface ShareableCardData {
+  assetName: string;
+  assetLogo: string;
+  platformName: string;
+  platformLogo: string;
+  netPnL: number;
+  roi: number;
+  assetType: AssetType;
+  timestamp: string;
+}
+
+// ==================== PSYCHOLOGY TAGS ====================
+
+export type PsychologyTag = 
+  | 'disciplined'
+  | 'fomo'
+  | 'revenge_trade'
+  | 'greed'
+  | 'fear'
+  | 'patience'
+  | 'overconfident'
+  | 'fearful'
+  | 'planned'
+  | 'impulsive'
+  | 'emotional'
+  | 'analytical';
+
+export interface PsychologyTagOption {
+  id: PsychologyTag;
+  label: string;
+  emoji: string;
+  category: 'positive' | 'negative' | 'neutral';
+  color: string;
+}
+
+// ==================== ADVANCED ANALYTICS ====================
+
+export interface MistakeCostAnalysis {
+  mistakeTrades: number;
+  totalMistakeCost: number;
+  avgMistakeCost: number;
+  fomoTrades: number;
+  fomoTotalCost: number;
+  revengeTrades: number;
+  revengeTotalCost: number;
+  disciplinedTrades: number;
+  disciplinedTotalPnL: number;
+  disciplinedAvgPnL: number;
+  disciplinedWinRate: number;
+  mistakeWinRate: number;
+}
+
+export interface TradingHoursStats {
+  hour: number;
+  totalTrades: number;
+  winningTrades: number;
+  losingTrades: number;
+  winRate: number;
+  totalPnL: number;
+  avgPnL: number;
+  bestTrade: number;
+  worstTrade: number;
+}
+
+export interface ExpectedValueAnalysis {
+  totalTrades: number;
+  winningTrades: number;
+  winPercentage: number;
+  avgWin: number;
+  losingTrades: number;
+  lossPercentage: number;
+  avgLoss: number;
+  expectedValue: number;
+  riskRewardRatio: number;
 }
