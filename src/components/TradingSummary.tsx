@@ -24,6 +24,8 @@ import { TradingLog, TimeframeFilter, TimeframeOption, ViewMode, ShareableCardDa
 import { formatCurrency, formatPercentage, getPnLColorClass } from '@/utils/tradingCalculations';
 import { getPlatformById } from '@/config/platformFees';
 import ShareablePnLCard from './ShareablePnLCard';
+import MistakeCostWidget from './MistakeCostWidget';
+import TradingHoursWidget from './TradingHoursWidget';
 import { subDays, subMonths, isAfter, parseISO } from 'date-fns';
 
 // ==================== TIMEFRAME OPTIONS ====================
@@ -335,6 +337,24 @@ export default function EnhancedTradingSummary() {
           </p>
         </motion.div>
       </div>
+
+      {/* Psychology Analytics Section */}
+      {allTrades.length > 0 && (
+        <div className="space-y-4">
+          <h3 className="text-xl font-bold text-white flex items-center gap-2">
+            <span>🧠</span>
+            Psychology & Trading Hours Analytics
+          </h3>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {/* Mistake Cost Widget */}
+            <MistakeCostWidget />
+            
+            {/* Trading Hours Widget */}
+            <TradingHoursWidget trades={allTrades} />
+          </div>
+        </div>
+      )}
 
       {/* Trade List */}
       {viewMode === 'minimalist' ? (
