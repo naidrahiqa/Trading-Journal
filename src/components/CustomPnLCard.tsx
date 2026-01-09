@@ -167,21 +167,33 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
   const isProfitable = data.netPnL >= 0;
   const assetTypeLabel = data.assetType === 'crypto' ? 'CRYPTOCURRENCY' : 'SAHAM';
 
-  // RESPONSIVE PREVIEW SCALING
-  // We render the card at FULL 1080p+ RESOLUTION internally for perfect neatness
-  // Then we scale it down visually to fit the screen.
-  const PREVIEW_SCALE = 0.35; 
+  const [previewScale, setPreviewScale] = useState(0.35);
+
+  useEffect(() => {
+    const handleResize = () => {
+      // Scale down card preview on mobile to fit screen width
+      if (window.innerWidth < 640) {
+        setPreviewScale(0.25); // Smaller on mobile
+      } else {
+        setPreviewScale(0.35); // Regular size on desktop
+      }
+    };
+
+    handleResize(); // Init
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const previewContainerStyle = {
-    width: `${selectedRatio.width * PREVIEW_SCALE}px`,
-    height: `${selectedRatio.height * PREVIEW_SCALE}px`,
+    width: `${selectedRatio.width * previewScale}px`,
+    height: `${selectedRatio.height * previewScale}px`,
     position: 'relative' as const,
   };
 
   const cardStyle = {
     width: `${selectedRatio.width}px`,
     height: `${selectedRatio.height}px`,
-    transform: `scale(${PREVIEW_SCALE})`,
+    transform: `scale(${previewScale})`,
     transformOrigin: 'top left',
     maxWidth: 'none',
     maxHeight: 'none',
@@ -192,13 +204,16 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto"
+      className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 overflow-y-auto"
       onClick={onClose}
     >
-      <div className="w-full max-w-7xl mx-auto flex justify-center" onClick={(e) => e.stopPropagation()}>
-        <div className="flex flex-col lg:flex-row gap-8 items-center lg:items-start">
+      <div 
+        className="min-h-full w-full flex items-center justify-center p-4 md:p-8"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="w-full max-w-7xl flex flex-col lg:flex-row gap-8 items-center lg:items-start justify-center">
           {/* Preview Area */}
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center sticky top-4">
             
             {/* Scale Container */}
             <div style={previewContainerStyle} className="shadow-2xl rounded-3xl overflow-hidden relative border border-slate-700">
