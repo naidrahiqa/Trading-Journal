@@ -89,7 +89,7 @@ Production-grade trading journal with **Psychology Tags**, **Mistake Cost Analys
 ### **1. Clone & Install**
 
 ```bash
-git clone https://github.com/yourusername/trading-journal.git
+git clone https://github.com/naidrahiqa/trading-journal.git
 cd trading-journal
 npm install
 ```
