@@ -1,0 +1,23 @@
+[
+  { "id": "ajaib", "name": "Ajaib", "category": "stock", "buyFee": 0.15, "sellFee": 0.25, "color": "#27AE60", "logoType": "custom" },
+  { "id": "stockbit", "name": "Stockbit", "category": "stock", "buyFee": 0.15, "sellFee": 0.25, "color": "#00D084", "logoType": "custom" },
+  { "id": "ipot", "name": "IPOT", "category": "stock", "buyFee": 0.19, "sellFee": 0.29, "color": "#ED1C24", "logoType": "custom" },
+  { "id": "mirae", "name": "Mirae Asset", "category": "stock", "buyFee": 0.15, "sellFee": 0.25, "color": "#FF8C00", "logoType": "custom" },
+  { "id": "mansek", "name": "Mandiri Sekuritas", "category": "stock", "buyFee": 0.18, "sellFee": 0.28, "color": "#003D79", "logoType": "custom" },
+  { "id": "binance", "name": "Binance", "category": "crypto", "buyFee": 0.1, "sellFee": 0.1, "color": "#F3BA2F", "logoType": "crypto-icon" },
+  { "id": "tokocrypto", "name": "Tokocrypto", "category": "crypto", "buyFee": 0.1, "sellFee": 0.1, "color": "#00ADEF", "logoType": "crypto-icon" },
+  { "id": "bybit", "name": "Bybit", "category": "crypto", "buyFee": 0.06, "sellFee": 0.06, "color": "#FFB11A", "logoType": "crypto-icon" },
+  { "id": "indodax", "name": "Indodax", "category": "crypto", "buyFee": 0.21, "sellFee": 0.21, "color": "#1C2D50", "logoType": "custom" },
+  { "id": "pintu", "name": "Pintu", "category": "crypto", "buyFee": 0.0, "sellFee": 0.0, "color": "#0049FF", "logoType": "custom" },
+  { "id": "gotrade", "name": "Gotrade", "category": "stock_global", "buyFee": 1.0, "sellFee": 1.0, "color": "#000000", "logoType": "custom" },
+  { "id": "ibkr", "name": "Interactive Brokers", "category": "stock_global", "buyFee": 0.05, "sellFee": 0.05, "color": "#B3191F", "logoType": "custom" },
+  { "id": "mexc", "name": "MEXC", "category": "crypto", "buyFee": 0.0, "sellFee": 0.0, "color": "#00A6FF", "logoType": "crypto-icon" },
+  { "id": "kucoin", "name": "KuCoin", "category": "crypto", "buyFee": 0.1, "sellFee": 0.1, "color": "#24AE8F", "logoType": "crypto-icon" },
+  { "id": "exness", "name": "Exness", "category": "forex", "buyFee": 0.0, "sellFee": 0.0, "color": "#F7A800", "logoType": "custom" },
+  { "id": "okx", "name": "OKX", "category": "crypto", "buyFee": 0.08, "sellFee": 0.08, "color": "#000000", "logoType": "crypto-icon" },
+  { "id": "reku", "name": "Reku", "category": "crypto", "buyFee": 0.1, "sellFee": 0.1, "color": "#0052FF", "logoType": "custom" },
+  { "id": "bions", "name": "BIONS", "category": "stock", "buyFee": 0.17, "sellFee": 0.27, "color": "#E57E25", "logoType": "custom" },
+  { "id": "brights", "name": "BRIGHTS", "category": "stock", "buyFee": 0.17, "sellFee": 0.27, "color": "#00529B", "logoType": "custom" },
+  { "id": "trima", "name": "Trima", "category": "stock", "buyFee": 0.15, "sellFee": 0.25, "color": "#D4AF37", "logoType": "custom" },
+  { "id": "valbury", "name": "KB Valbury", "category": "stock", "buyFee": 0.15, "sellFee": 0.25, "color": "#FFC000", "logoType": "custom" }
+]

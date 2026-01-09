@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 
+import PlatformSelector from '@/components/PlatformSelector';
 // Import utilities and configurations
 import { 
   calculatePnL, 
@@ -268,34 +269,12 @@ export default function TradingDashboard() {
                   </div>
                 </div>
 
-                {/* Platform Selection */}
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-3">
-                    Trading Platform
-                  </label>
-                  <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
-                    {availablePlatforms.map((platform) => (
-                      <motion.button
-                        key={platform.id}
-                        type="button"
-                        onClick={() => handlePlatformSelect(platform.id)}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className={`flex-shrink-0 flex items-center gap-2 px-4 py-3 rounded-xl border-2 transition-all duration-300 ${
-                          formData.platformId === platform.id
-                            ? 'border-emerald-500 bg-emerald-500/10 shadow-lg shadow-emerald-500/20'
-                            : 'border-slate-700 bg-slate-800/30 hover:border-slate-600'
-                        }`}
-                      >
-                        <span className="text-2xl">{platform.logo}</span>
-                        <div className="text-left">
-                          <div className="font-medium text-sm">{platform.name}</div>
-                          <div className="text-xs text-slate-400">{platform.fees.description}</div>
-                        </div>
-                      </motion.button>
-                    ))}
-                  </div>
-                </div>
+                {/* Platform Selection - NEW COMPONENT */}
+                <PlatformSelector
+                  assetType={assetType}
+                  selectedPlatform={formData.platformId}
+                  onSelect={handlePlatformSelect}
+                />
 
                 {/* Asset Name */}
                 <div>
