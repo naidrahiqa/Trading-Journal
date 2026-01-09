@@ -4,66 +4,36 @@
  * @version 2.0.0
  */
 
-'use client';
-
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Share2, Download, TrendingUp, TrendingDown, X, Sparkles } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { ShareableCardData } from '@/types/trading';
 import { formatCurrency, formatPercentage, getPnLColorClass } from '@/utils/tradingCalculations';
+import { generateCryptoAvatar, generateStockAvatar, getBrokerLogo } from '@/utils/logoUtils';
 
 interface ShareablePnLCardProps {
   data: ShareableCardData;
   onClose: () => void;
 }
 
-// Real crypto logos from CoinGecko API
-const getCryptoLogo = (assetName: string): string => {
-  const symbol = assetName.split('/')[0].toLowerCase(); // BTC/USDT -> btc
-  return `https://assets.coincap.io/assets/icons/${symbol}@2x.png`;
-};
-
-// Generate avatar for stocks (first letter with gradient)
-const getStockAvatar = (ticker: string): JSX.Element => {
-  const letter = ticker.charAt(0).toUpperCase();
-  const colors = [
-    'from-blue-500 to-cyan-500',
-    'from-purple-500 to-pink-500',
-    'from-green-500 to-emerald-500',
-    'from-orange-500 to-red-500',
-    'from-indigo-500 to-purple-500',
-  ];
-  const colorIndex = letter.charCodeAt(0) % colors.length;
-  
-  return (
-    <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${colors[colorIndex]} flex items-center justify-center shadow-2xl`}>
-      <span className="text-4xl font-black text-white">{letter}</span>
-    </div>
-  );
-};
-
-// Platform logos mapping
-const platformLogos: Record<string, string> = {
-  binance: 'https://cryptologos.cc/logos/binance-coin-bnb-logo.png',
-  bybit: '🟠',
-  okx: '⚫',
-  tokocrypto: '🔵',
-  indodax: '🟣',
-  reku: '🟢',
-  pintu: '🟡',
-  ajaib: '🟢',
-  stockbit: '📊',
-  ipot: '📈',
-  mirae: '🏛️',
-  gotrade: '🌐',
-  interactive_brokers: '🔷',
-};
-
 export default function ShareablePnLCard({ data, onClose }: ShareablePnLCardProps) {
   const cardRef = useRef<HTMLDivElement>(null);
-  const [isExporting, setIsExporting] = React.useState(false);
-  const [logoError, setLogoError] = React.useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [assetLogoUrl, setAssetLogoUrl] = useState<string>('');
+
+  // Generate asset logo on mount
+  useEffect(() => {
+    const symbol = data.assetName.split('/')[0]; // BTC/USDT -> BTC
+    
+    if (data.assetType === 'crypto') {
+      // Generate crypto SVG avatar
+      setAssetLogoUrl(generateCryptoAvatar(symbol.toLowerCase()));
+    } else {
+      // Generate stock SVG avatar
+      setAssetLogoUrl(generateStockAvatar(symbol.toUpperCase()));
+    }
+  }, [data.assetName, data.assetType]);
 
   const handleDownload = async () => {
     if (!cardRef.current) return;
@@ -199,24 +169,17 @@ export default function ShareablePnLCard({ data, onClose }: ShareablePnLCardProp
             {/* Header - Asset Info */}
             <div className="flex items-start justify-between mb-8">
               <div className="flex items-center gap-4">
-                {/* Asset Logo */}
-                {data.assetType === 'crypto' && !logoError ? (
-                  <div className="relative group">
-                    <div className={`absolute inset-0 bg-gradient-to-r ${
-                      isProfitable ? 'from-emerald-500 to-cyan-500' : 'from-rose-500 to-pink-500'
-                    } rounded-2xl blur-xl opacity-75 group-hover:opacity-100 transition-opacity`}></div>
-                    <img 
-                      src={getCryptoLogo(data.assetName)}
-                      alt={data.assetName}
-                      className="relative w-20 h-20 rounded-2xl object-cover shadow-2xl"
-                      onError={() => setLogoError(true)}
-                    />
-                  </div>
-                ) : (
-                  <div className="relative">
-                    {getStockAvatar(data.assetName)}
-                  </div>
-                )}
+                {/* Asset Logo - SVG Generated */}
+                <div className="relative group">
+                  <div className={`absolute inset-0 bg-gradient-to-r ${
+                    isProfitable ? 'from-emerald-500 to-cyan-500' : 'from-rose-500 to-pink-500'
+                  } rounded-2xl blur-xl opacity-75 group-hover:opacity-100 transition-opacity`}></div>
+                  <img 
+                    src={assetLogoUrl}
+                    alt={data.assetName}
+                    className="relative w-20 h-20 rounded-2xl object-cover shadow-2xl"
+                  />
+                </div>
                 
                 <div>
                   <h2 className="text-3xl font-black text-white mb-1 tracking-tight">
@@ -236,7 +199,7 @@ export default function ShareablePnLCard({ data, onClose }: ShareablePnLCardProp
 
               {/* Platform Badge */}
               <div className="text-right">
-                <div className="text-4xl mb-2">{platformLogos[data.platformName.toLowerCase()] || data.platformLogo}</div>
+                <div className="text-4xl mb-2">{getBrokerLogo(data.platformName.toLowerCase()) || data.platformLogo}</div>
                 <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider">
                   {data.platformName}
                 </p>
