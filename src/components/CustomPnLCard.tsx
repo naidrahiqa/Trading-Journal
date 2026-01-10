@@ -112,7 +112,39 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
 
     const reader = new FileReader();
     reader.onload = (event) => {
-      setCustomBgImage(event.target?.result as string);
+      const result = event.target?.result as string;
+      setCustomBgImage(result);
+
+      // Smart Contrast: Calculate luminance
+      const img = new Image();
+      img.src = result;
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        // Resize for faster processing
+        canvas.width = 100;
+        canvas.height = 100;
+        ctx.drawImage(img, 0, 0, 100, 100);
+
+        const imageData = ctx.getImageData(0, 0, 100, 100);
+        const data = imageData.data;
+        let r, g, b, avg;
+        let colorSum = 0;
+
+        for (let x = 0, len = data.length; x < len; x += 4) {
+          r = data[x];
+          g = data[x + 1];
+          b = data[x + 2];
+          avg = Math.floor((r + g + b) / 3);
+          colorSum += avg;
+        }
+
+        const brightness = Math.floor(colorSum / (100 * 100));
+        // If brightness > 128 (light), use black text. Else white.
+        setTextColor(brightness > 128 ? 'black' : 'white');
+      };
     };
     reader.readAsDataURL(file);
   };
@@ -322,13 +354,13 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
                       <div className="grid grid-cols-2 gap-8 mb-8 max-w-4xl mx-auto">
                         <div className="bg-slate-900/60 backdrop-blur-md rounded-3xl p-8 border border-white/10">
                           <p className="text-slate-400 font-bold text-lg uppercase mb-2 tracking-widest">Entry</p>
-                          <p className="text-5xl font-black text-white">
+                          <p className="text-5xl font-black text-white" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
                             {formatCurrency(data.entryPrice, data.assetType)}
                           </p>
                         </div>
                         <div className="bg-slate-900/60 backdrop-blur-md rounded-3xl p-8 border border-white/10">
                           <p className="text-slate-400 font-bold text-lg uppercase mb-2 tracking-widest">Exit</p>
-                          <p className="text-5xl font-black text-white">
+                          <p className="text-5xl font-black text-white" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
                             {formatCurrency(data.exitPrice, data.assetType)}
                           </p>
                         </div>
@@ -337,7 +369,7 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
                       // Regular Mode: Show Net PnL
                       <div className={`text-[8rem] leading-none font-black mb-10 flex items-center justify-center gap-6 drop-shadow-2xl ${
                         isProfitable ? 'text-emerald-400' : 'text-rose-400'
-                      }`}>
+                      }`} style={{ textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
                         {isProfitable ? <TrendingUp className="w-32 h-32" /> : <TrendingDown className="w-32 h-32" />}
                         <span>{formatCurrency(data.netPnL, data.assetType)}</span>
                       </div>
@@ -351,7 +383,7 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
                     }`}>
                       <span className={`text-6xl font-black tracking-tight ${
                         textColor === 'white' ? 'text-white' : 'text-slate-900'
-                      }`} style={{ textShadow: isProfitable ? '0 0 30px rgba(52, 211, 153, 0.4)' : '0 0 30px rgba(244, 63, 94, 0.4)' }}>
+                      }`} style={{ textShadow: `0 2px 8px rgba(0,0,0,0.4), ${isProfitable ? '0 0 30px rgba(52, 211, 153, 0.4)' : '0 0 30px rgba(244, 63, 94, 0.4)'}` }}>
                         {isProfitable ? '+' : ''}{formatPercentage(data.roi)} ROI
                       </span>
                     </div>
@@ -425,6 +457,36 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
                       hideValues ? 'translate-x-6' : 'translate-x-0'
                     }`} />
                   </button>
+                </div>
+                
+                {/* Text Color Toggle */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    <Palette className="w-4 h-4 inline mr-2" />
+                    Text Color
+                  </label>
+                  <div className="flex bg-slate-800 p-1 rounded-xl border border-slate-700">
+                    <button
+                      onClick={() => setTextColor('white')}
+                      className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${
+                        textColor === 'white'
+                          ? 'bg-slate-600 text-white shadow-md'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      White
+                    </button>
+                    <button
+                      onClick={() => setTextColor('black')}
+                      className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${
+                        textColor === 'black'
+                          ? 'bg-white text-black shadow-md'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      Black
+                    </button>
+                  </div>
                 </div>
 
                 {/* Username */}
