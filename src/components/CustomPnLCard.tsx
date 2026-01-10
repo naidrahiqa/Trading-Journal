@@ -324,13 +324,13 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
                       <div className="grid grid-cols-2 gap-8 mb-8 max-w-4xl mx-auto">
                         <div className="bg-slate-900/40 backdrop-blur-md rounded-3xl p-8 border border-white/10">
                           <p className="invisible-tag text-xs font-bold uppercase mb-2 tracking-widest bg-white/10 backdrop-blur-sm py-1 px-3 rounded-full inline-block text-slate-200">Entry</p>
-                          <p className="text-5xl font-black text-white" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
+                          <p className="text-7xl font-black text-white tracking-tighter" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
                             {formatCurrency(data.entryPrice, data.assetType)}
                           </p>
                         </div>
                         <div className="bg-slate-900/40 backdrop-blur-md rounded-3xl p-8 border border-white/10">
                           <p className="invisible-tag text-xs font-bold uppercase mb-2 tracking-widest bg-white/10 backdrop-blur-sm py-1 px-3 rounded-full inline-block text-slate-200">Exit</p>
-                          <p className="text-5xl font-black text-white" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
+                          <p className="text-7xl font-black text-white tracking-tighter" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
                             {formatCurrency(data.exitPrice, data.assetType)}
                           </p>
                         </div>
@@ -353,7 +353,7 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
                     }`}>
                       <span className="text-6xl font-black tracking-tight text-white" 
                         style={{ textShadow: isProfitable ? '0 0 30px rgba(52, 211, 153, 0.8)' : '0 0 30px rgba(244, 63, 94, 0.6)' }}>
-                        {isProfitable ? '+' : ''}{formatPercentage(data.roi)} ROI
+                        {formatPercentage(data.roi)} ROI
                       </span>
                     </div>
                   </div>

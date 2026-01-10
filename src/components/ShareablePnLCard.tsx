@@ -211,13 +211,13 @@ export default function ShareablePnLCard({ data, onClose }: ShareablePnLCardProp
                 <div className="grid grid-cols-2 gap-4 mb-8">
                   <div className="bg-white/5 rounded-2xl p-4 text-center border border-white/5">
                     <p className="text-white/40 text-xs font-bold uppercase tracking-wider mb-1">Entry Price</p>
-                    <p className="text-xl md:text-2xl font-bold font-mono text-white">
+                    <p className="text-3xl md:text-4xl font-bold font-mono text-white">
                       {formatCurrency(data.entryPrice, data.assetType)}
                     </p>
                   </div>
                   <div className="bg-white/5 rounded-2xl p-4 text-center border border-white/5">
                     <p className="text-white/40 text-xs font-bold uppercase tracking-wider mb-1">Exit Price</p>
-                    <p className="text-xl md:text-2xl font-bold font-mono text-white">
+                    <p className="text-3xl md:text-4xl font-bold font-mono text-white">
                       {formatCurrency(data.exitPrice, data.assetType)}
                     </p>
                   </div>
