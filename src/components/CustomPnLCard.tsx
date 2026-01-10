@@ -55,6 +55,7 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
   const [hideValues, setHideValues] = useState(false);
   const [brokerLogoUrl, setBrokerLogoUrl] = useState<string>('');
   const [textColor, setTextColor] = useState<'white' | 'black'>('white');
+  const [bgDimOpacity, setBgDimOpacity] = useState(40);
 
   // Load user profile
   useEffect(() => {
@@ -254,8 +255,11 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
                   }}
                 />
 
-                {/* Overlay */}
-                <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"></div>
+                {/* Overlay - Controlled by Slider */}
+                <div 
+                  className="absolute inset-0 bg-black backdrop-blur-sm transition-opacity duration-300"
+                  style={{ opacity: bgDimOpacity / 100 }}
+                ></div>
 
                 {/* Content */}
                 <div className="relative h-full flex flex-col justify-between p-12">
@@ -502,6 +506,26 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
                       />
                     ))}
                   </div>
+                </div>
+
+                {/* Background Dimmer Slider */}
+                <div>
+                   <label className="block text-sm font-medium text-slate-300 mb-2 flex justify-between">
+                    <span>
+                      <Sparkles className="w-4 h-4 inline mr-2" />
+                      Background Dimmer
+                    </span>
+                    <span className="text-emerald-400">{bgDimOpacity}%</span>
+                  </label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="80"
+                    value={bgDimOpacity}
+                    onChange={(e) => setBgDimOpacity(Number(e.target.value))}
+                    className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-500 hover:accent-emerald-400"
+                  />
+                  <p className="text-xs text-slate-500 mt-1">Adjust contrast for better readability</p>
                 </div>
 
                 {/* Action Buttons */}
