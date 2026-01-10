@@ -54,8 +54,7 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
   const [showCustomize, setShowCustomize] = useState(true);
   const [hideValues, setHideValues] = useState(false);
   const [brokerLogoUrl, setBrokerLogoUrl] = useState<string>('');
-  const [textColor, setTextColor] = useState<'white' | 'black'>('white');
-  const [bgDimOpacity, setBgDimOpacity] = useState(40);
+  const [bgDimOpacity, setBgDimOpacity] = useState(25);
 
   // Load user profile
   useEffect(() => {
@@ -114,37 +113,6 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
     reader.onload = (event) => {
       const result = event.target?.result as string;
       setCustomBgImage(result);
-
-      // Smart Contrast: Calculate luminance
-      const img = new Image();
-      img.src = result;
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-
-        // Resize for faster processing
-        canvas.width = 100;
-        canvas.height = 100;
-        ctx.drawImage(img, 0, 0, 100, 100);
-
-        const imageData = ctx.getImageData(0, 0, 100, 100);
-        const data = imageData.data;
-        let r, g, b, avg;
-        let colorSum = 0;
-
-        for (let x = 0, len = data.length; x < len; x += 4) {
-          r = data[x];
-          g = data[x + 1];
-          b = data[x + 2];
-          avg = Math.floor((r + g + b) / 3);
-          colorSum += avg;
-        }
-
-        const brightness = Math.floor(colorSum / (100 * 100));
-        // If brightness > 128 (light), use black text. Else white.
-        setTextColor(brightness > 128 ? 'black' : 'white');
-      };
     };
     reader.readAsDataURL(file);
   };
@@ -313,14 +281,14 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
                         />
                       </div>
                       <div>
-                        <h2 className={`text-5xl font-black tracking-tight leading-none mb-2 drop-shadow-lg ${textColor === 'white' ? 'text-white' : 'text-slate-900'}`}>
+                        <h2 className="text-5xl font-black tracking-tight leading-none mb-2 drop-shadow-lg text-white">
                           {data.assetName}
                         </h2>
                         <span className={`inline-block px-4 py-1.5 rounded-full text-xl font-bold tracking-wider border backdrop-blur-md ${
                           isProfitable 
-                            ? 'bg-emerald-500/20 text-emerald-600 border-emerald-500/30' 
-                            : 'bg-rose-500/20 text-rose-600 border-rose-500/30'
-                        } ${textColor === 'white' ? '' : 'border-opacity-50'}`}>
+                            ? 'bg-emerald-500/20 text-emerald-200 border-emerald-500/30' 
+                            : 'bg-rose-500/20 text-rose-200 border-rose-500/30'
+                        }`}>
                           {assetTypeLabel}
                         </span>
                       </div>
@@ -345,21 +313,21 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
 
                   {/* Main Content: PnL or Entry/Exit */}
                   <div className="text-center my-12">
-                    <p className={`font-bold text-2xl mb-8 uppercase tracking-[0.4em] drop-shadow-md ${textColor === 'white' ? 'text-slate-300' : 'text-slate-800'}`}>
+                    <p className="text-slate-300 font-bold text-2xl mb-8 uppercase tracking-[0.4em] drop-shadow-md">
                       {hideValues ? 'TRADE RESULT' : 'NET PROFIT/LOSS'}
                     </p>
                     
                     {hideValues && data.entryPrice && data.exitPrice ? (
                       // Hidden Mode: Show Entry/Exit
                       <div className="grid grid-cols-2 gap-8 mb-8 max-w-4xl mx-auto">
-                        <div className="bg-slate-900/60 backdrop-blur-md rounded-3xl p-8 border border-white/10">
-                          <p className="text-slate-400 font-bold text-lg uppercase mb-2 tracking-widest">Entry</p>
+                        <div className="bg-slate-900/40 backdrop-blur-md rounded-3xl p-8 border border-white/10">
+                          <p className="invisible-tag text-xs font-bold uppercase mb-2 tracking-widest bg-white/10 backdrop-blur-sm py-1 px-3 rounded-full inline-block text-slate-200">Entry</p>
                           <p className="text-5xl font-black text-white" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
                             {formatCurrency(data.entryPrice, data.assetType)}
                           </p>
                         </div>
-                        <div className="bg-slate-900/60 backdrop-blur-md rounded-3xl p-8 border border-white/10">
-                          <p className="text-slate-400 font-bold text-lg uppercase mb-2 tracking-widest">Exit</p>
+                        <div className="bg-slate-900/40 backdrop-blur-md rounded-3xl p-8 border border-white/10">
+                          <p className="invisible-tag text-xs font-bold uppercase mb-2 tracking-widest bg-white/10 backdrop-blur-sm py-1 px-3 rounded-full inline-block text-slate-200">Exit</p>
                           <p className="text-5xl font-black text-white" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
                             {formatCurrency(data.exitPrice, data.assetType)}
                           </p>
@@ -369,8 +337,8 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
                       // Regular Mode: Show Net PnL
                       <div className={`text-[8rem] leading-none font-black mb-10 flex items-center justify-center gap-6 drop-shadow-2xl ${
                         isProfitable ? 'text-emerald-400' : 'text-rose-400'
-                      }`} style={{ textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
-                        {isProfitable ? <TrendingUp className="w-32 h-32" /> : <TrendingDown className="w-32 h-32" />}
+                      }`} style={{ textShadow: isProfitable ? '0 0 40px rgba(52, 211, 153, 0.6)' : '0 2px 8px rgba(0,0,0,0.4)' }}>
+                        {isProfitable ? <TrendingUp className="w-32 h-32 text-emerald-400" style={{ filter: 'drop-shadow(0 0 20px rgba(52, 211, 153, 0.4))' }} /> : <TrendingDown className="w-32 h-32" />}
                         <span>{formatCurrency(data.netPnL, data.assetType)}</span>
                       </div>
                     )}
@@ -378,22 +346,23 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
                     {/* ROI Badge */}
                     <div className={`inline-block px-12 py-6 rounded-full border-4 shadow-2xl backdrop-blur-xl ${
                       isProfitable
-                        ? 'bg-emerald-500/20 border-emerald-400'
-                        : 'bg-rose-500/20 border-rose-400'
+                        ? 'bg-emerald-500/10 border-emerald-400/50'
+                        : 'bg-rose-500/10 border-rose-400/50'
                     }`}>
-                      <span className={`text-6xl font-black tracking-tight ${
-                        textColor === 'white' ? 'text-white' : 'text-slate-900'
-                      }`} style={{ textShadow: `0 2px 8px rgba(0,0,0,0.4), ${isProfitable ? '0 0 30px rgba(52, 211, 153, 0.4)' : '0 0 30px rgba(244, 63, 94, 0.4)'}` }}>
+                      <span className="text-6xl font-black tracking-tight text-white" 
+                        style={{ textShadow: isProfitable ? '0 0 30px rgba(52, 211, 153, 0.8)' : '0 0 30px rgba(244, 63, 94, 0.6)' }}>
                         {isProfitable ? '+' : ''}{formatPercentage(data.roi)} ROI
                       </span>
                     </div>
                   </div>
 
                   {/* Footer */}
-                  <div className={`flex items-end justify-between border-t pt-8 ${textColor === 'white' ? 'border-white/10' : 'border-black/10'}`}>
+                  <div className="flex items-end justify-between border-t border-white/10 pt-8">
                     <div>
-                      <p className={`font-bold text-xl mb-2 tracking-widest ${textColor === 'white' ? 'text-slate-400' : 'text-slate-600'}`}>TANGGAL</p>
-                      <p className={`font-bold text-3xl ${textColor === 'white' ? 'text-white' : 'text-slate-900'}`}>
+                      <div className="bg-white/10 backdrop-blur-sm px-4 py-1.5 rounded-lg inline-block mb-3">
+                        <p className="font-bold text-sm tracking-widest text-slate-200">TANGGAL</p>
+                      </div>
+                      <p className="font-bold text-3xl text-white drop-shadow-md">
                         {new Date(data.timestamp).toLocaleDateString('id-ID', {
                           day: 'numeric',
                           month: 'long',
@@ -403,11 +372,13 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
                     </div>
                     <div className="text-right">
                       {username && (
-                        <p className={`font-black text-4xl mb-2 drop-shadow-lg ${textColor === 'white' ? 'text-emerald-400' : 'text-emerald-600'}`}>@{username}</p>
+                        <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl inline-block mb-3 border border-white/5">
+                          <p className="font-black text-4xl text-emerald-400 drop-shadow-[0_0_15px_rgba(52,211,153,0.5)]">@{username}</p>
+                        </div>
                       )}
-                      <div className="flex items-center gap-3 justify-end opacity-80">
-                        <Sparkles className={`w-8 h-8 ${textColor === 'white' ? 'text-white' : 'text-slate-900'}`} />
-                        <span className={`text-2xl font-bold tracking-wide ${textColor === 'white' ? 'text-white' : 'text-slate-900'}`}>Trading Journal</span>
+                      <div className="flex items-center gap-3 justify-end opacity-90">
+                        <Sparkles className="w-6 h-6 text-emerald-400" />
+                        <span className="text-xl font-bold tracking-wide text-white">Trading Journal</span>
                       </div>
                     </div>
                   </div>
@@ -457,36 +428,6 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
                       hideValues ? 'translate-x-6' : 'translate-x-0'
                     }`} />
                   </button>
-                </div>
-                
-                {/* Text Color Toggle */}
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
-                    <Palette className="w-4 h-4 inline mr-2" />
-                    Text Color
-                  </label>
-                  <div className="flex bg-slate-800 p-1 rounded-xl border border-slate-700">
-                    <button
-                      onClick={() => setTextColor('white')}
-                      className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${
-                        textColor === 'white'
-                          ? 'bg-slate-600 text-white shadow-md'
-                          : 'text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      White
-                    </button>
-                    <button
-                      onClick={() => setTextColor('black')}
-                      className={`flex-1 py-2 rounded-lg text-sm font-bold transition-all ${
-                        textColor === 'black'
-                          ? 'bg-white text-black shadow-md'
-                          : 'text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      Black
-                    </button>
-                  </div>
                 </div>
 
                 {/* Username */}
