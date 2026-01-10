@@ -318,16 +318,16 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
                     
                     {hideValues && data.entryPrice && data.exitPrice ? (
                       // Hidden Mode: Show Entry/Exit
-                      <div className="grid grid-cols-2 gap-8 mb-8 max-w-4xl mx-auto">
-                        <div className="bg-slate-900/40 backdrop-blur-md rounded-3xl p-8 border border-white/10">
-                          <p className="invisible-tag text-xl font-bold uppercase mb-4 tracking-widest bg-white/10 backdrop-blur-sm py-2 px-6 rounded-full inline-block text-slate-200 shadow-sm border border-white/5">Entry</p>
-                          <p className="text-8xl font-black text-white tracking-tighter" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
+                      <div className="flex items-center justify-center gap-4 mb-8 max-w-4xl mx-auto w-full">
+                        <div className="flex-1 bg-slate-900/40 backdrop-blur-md rounded-3xl p-6 border-2 border-white/10 flex flex-col items-center justify-center min-w-0">
+                          <p className="invisible-tag text-lg font-bold uppercase mb-2 tracking-widest bg-white/10 backdrop-blur-sm py-1.5 px-5 rounded-full inline-block text-slate-200 shadow-sm border border-white/5">Entry</p>
+                          <p className="text-5xl lg:text-6xl font-black text-white tracking-tighter w-full truncate px-2" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
                             {formatCurrency(data.entryPrice, data.assetType, currency)}
                           </p>
                         </div>
-                        <div className="bg-slate-900/40 backdrop-blur-md rounded-3xl p-8 border border-white/10">
-                          <p className="invisible-tag text-xl font-bold uppercase mb-4 tracking-widest bg-white/10 backdrop-blur-sm py-2 px-6 rounded-full inline-block text-slate-200 shadow-sm border border-white/5">Exit</p>
-                          <p className="text-8xl font-black text-white tracking-tighter" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
+                        <div className="flex-1 bg-slate-900/40 backdrop-blur-md rounded-3xl p-6 border-2 border-white/10 flex flex-col items-center justify-center min-w-0">
+                          <p className="invisible-tag text-lg font-bold uppercase mb-2 tracking-widest bg-white/10 backdrop-blur-sm py-1.5 px-5 rounded-full inline-block text-slate-200 shadow-sm border border-white/5">Exit</p>
+                          <p className="text-5xl lg:text-6xl font-black text-white tracking-tighter w-full truncate px-2" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
                             {formatCurrency(data.exitPrice, data.assetType, currency)}
                           </p>
                         </div>
