@@ -1,7 +1,7 @@
 /**
  * Custom PnL Card Editor
  * @description Customizable card with background upload & aspect ratio
- * @version 3.1.0 (HD Output & Privacy Mode)
+ * @version 3.2.0 (HD Output & Privacy Mode & Currency Selection)
  */
 
 'use client';
@@ -57,6 +57,7 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
   const [bgDimOpacity, setBgDimOpacity] = useState(25);
   const [showAssetIcon, setShowAssetIcon] = useState(true);
   const [customAssetName, setCustomAssetName] = useState(data.assetName);
+  const [currency, setCurrency] = useState<'USD' | 'IDR'>(data.assetType === 'crypto' ? 'USD' : 'IDR');
 
   // Load user profile
   useEffect(() => {
@@ -104,8 +105,6 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
     setUsername(value);
     localStorage.setItem('tradingJournalUsername', value);
   };
-  
-  // ... (rest of handlers safely skipped as they are unchanged)
 
   const handleBackgroundUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -118,8 +117,6 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
     };
     reader.readAsDataURL(file);
   };
-
-  // ... (export logic can remain, I will focus on the return render)
 
   const handleExport = async (action: 'download' | 'share') => {
     if (!cardRef.current) return;
@@ -323,15 +320,15 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
                       // Hidden Mode: Show Entry/Exit
                       <div className="grid grid-cols-2 gap-8 mb-8 max-w-4xl mx-auto">
                         <div className="bg-slate-900/40 backdrop-blur-md rounded-3xl p-8 border border-white/10">
-                          <p className="invisible-tag text-xs font-bold uppercase mb-2 tracking-widest bg-white/10 backdrop-blur-sm py-1 px-3 rounded-full inline-block text-slate-200">Entry</p>
-                          <p className="text-7xl font-black text-white tracking-tighter" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
-                            {formatCurrency(data.entryPrice, data.assetType)}
+                          <p className="invisible-tag text-xl font-bold uppercase mb-4 tracking-widest bg-white/10 backdrop-blur-sm py-2 px-6 rounded-full inline-block text-slate-200 shadow-sm border border-white/5">Entry</p>
+                          <p className="text-8xl font-black text-white tracking-tighter" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
+                            {formatCurrency(data.entryPrice, data.assetType, currency)}
                           </p>
                         </div>
                         <div className="bg-slate-900/40 backdrop-blur-md rounded-3xl p-8 border border-white/10">
-                          <p className="invisible-tag text-xs font-bold uppercase mb-2 tracking-widest bg-white/10 backdrop-blur-sm py-1 px-3 rounded-full inline-block text-slate-200">Exit</p>
-                          <p className="text-7xl font-black text-white tracking-tighter" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
-                            {formatCurrency(data.exitPrice, data.assetType)}
+                          <p className="invisible-tag text-xl font-bold uppercase mb-4 tracking-widest bg-white/10 backdrop-blur-sm py-2 px-6 rounded-full inline-block text-slate-200 shadow-sm border border-white/5">Exit</p>
+                          <p className="text-8xl font-black text-white tracking-tighter" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
+                            {formatCurrency(data.exitPrice, data.assetType, currency)}
                           </p>
                         </div>
                       </div>
@@ -341,7 +338,7 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
                         isProfitable ? 'text-emerald-400' : 'text-rose-400'
                       }`} style={{ textShadow: isProfitable ? '0 0 40px rgba(52, 211, 153, 0.6)' : '0 2px 8px rgba(0,0,0,0.4)' }}>
                         {isProfitable ? <TrendingUp className="w-32 h-32 text-emerald-400" style={{ filter: 'drop-shadow(0 0 20px rgba(52, 211, 153, 0.4))' }} /> : <TrendingDown className="w-32 h-32" />}
-                        <span>{formatCurrency(data.netPnL, data.assetType)}</span>
+                        <span>{formatCurrency(data.netPnL, data.assetType, currency)}</span>
                       </div>
                     )}
 
@@ -362,9 +359,9 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
                   <div className="flex items-end justify-between border-t border-white/10 pt-8">
                     <div>
                       <div className="bg-white/10 backdrop-blur-sm px-4 py-1.5 rounded-lg inline-block mb-3">
-                        <p className="font-bold text-sm tracking-widest text-slate-200">TANGGAL</p>
+                        <p className="font-bold text-2xl tracking-widest text-slate-200">TANGGAL</p>
                       </div>
-                      <p className="font-bold text-3xl text-white drop-shadow-md">
+                      <p className="font-bold text-5xl text-white drop-shadow-md">
                         {new Date(data.timestamp).toLocaleDateString('id-ID', {
                           day: 'numeric',
                           month: 'long',
@@ -375,12 +372,12 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
                     <div className="text-right">
                       {username && (
                         <div className="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl inline-block mb-3 border border-white/5">
-                          <p className="font-black text-4xl text-emerald-400 drop-shadow-[0_0_15px_rgba(52,211,153,0.5)]">@{username}</p>
+                          <p className="font-black text-5xl text-emerald-400 drop-shadow-[0_0_15px_rgba(52,211,153,0.5)]">@{username}</p>
                         </div>
                       )}
                       <div className="flex items-center gap-3 justify-end opacity-90">
-                        <Sparkles className="w-6 h-6 text-emerald-400" />
-                        <span className="text-xl font-bold tracking-wide text-white">Trading Journal</span>
+                        <Sparkles className="w-8 h-8 text-emerald-400" />
+                        <span className="text-3xl font-bold tracking-wide text-white">Trading Journal</span>
                       </div>
                     </div>
                   </div>
@@ -430,6 +427,33 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
                       hideValues ? 'translate-x-6' : 'translate-x-0'
                     }`} />
                   </button>
+                </div>
+
+                {/* Currency Selector */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">Currency</label>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => setCurrency('IDR')}
+                      className={`flex-1 py-3 rounded-xl border transition-all ${
+                        currency === 'IDR' 
+                          ? 'border-emerald-500 bg-emerald-500/20 text-emerald-400 font-bold' 
+                          : 'border-slate-700 bg-slate-800 text-slate-400 hover:border-slate-500'
+                      }`}
+                    >
+                      IDR (Rp)
+                    </button>
+                    <button 
+                      onClick={() => setCurrency('USD')}
+                      className={`flex-1 py-3 rounded-xl border transition-all ${
+                        currency === 'USD' 
+                          ? 'border-emerald-500 bg-emerald-500/20 text-emerald-400 font-bold' 
+                          : 'border-slate-700 bg-slate-800 text-slate-400 hover:border-slate-500'
+                      }`}
+                    >
+                      USD ($)
+                    </button>
+                  </div>
                 </div>
 
                 {/* Asset Name & Icon */}
