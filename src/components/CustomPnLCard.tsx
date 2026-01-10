@@ -55,6 +55,8 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
   const [hideValues, setHideValues] = useState(false);
   const [brokerLogoUrl, setBrokerLogoUrl] = useState<string>('');
   const [bgDimOpacity, setBgDimOpacity] = useState(25);
+  const [showAssetIcon, setShowAssetIcon] = useState(true);
+  const [customAssetName, setCustomAssetName] = useState(data.assetName);
 
   // Load user profile
   useEffect(() => {
@@ -65,14 +67,14 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
   useEffect(() => {
     const fetchLogo = async () => {
       try {
-        const url = await getAssetLogo(data.assetName, data.assetType);
+        const url = await getAssetLogo(customAssetName, data.assetType);
         setAssetLogoUrl(url);
       } catch (error) {
         console.error('Error fetching asset logo:', error);
       }
     };
     fetchLogo();
-  }, [data.assetName, data.assetType]);
+  }, [customAssetName, data.assetType]);
 
   // Fetch Broker Logo
   useEffect(() => {
@@ -149,14 +151,14 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
         if (!blob) return;
 
         if (action === 'share' && navigator.share && typeof navigator.canShare === 'function') {
-          const file = new File([blob], `${data.assetName}-PnL.png`, { type: 'image/png' });
+          const file = new File([blob], `${customAssetName}-PnL.png`, { type: 'image/png' });
           
           if (navigator.canShare({ files: [file] })) {
             try {
               await navigator.share({
                 files: [file],
-                title: `${data.assetName} - ${data.netPnL >= 0 ? 'PROFIT' : 'LOSS'}`,
-                text: `Cek profit ${data.assetName} saya!`,
+                title: `${customAssetName} - ${data.netPnL >= 0 ? 'PROFIT' : 'LOSS'}`,
+                text: `Cek profit ${customAssetName} saya!`,
               });
             } catch (err) {
               downloadBlob(blob);
@@ -180,7 +182,7 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${data.assetName.replace('/', '-')}-PnL-${Date.now()}.png`;
+    link.download = `${customAssetName.replace('/', '-')}-PnL-${Date.now()}.png`;
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -267,6 +269,7 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
                   <div className="flex items-start justify-between">
                     {/* Asset Logo & Info */}
                     <div className="flex items-center gap-6">
+                      {showAssetIcon && (
                       <div className="relative">
                         {/* Circle Background for Asset */}
                         <div className={`absolute inset-0 rounded-full blur-md opacity-50 ${
@@ -274,15 +277,14 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
                         }`}></div>
                         <img 
                           src={assetLogoUrl}
-                          alt={data.assetName}
-                          className={`relative w-24 h-24 rounded-full border-4 shadow-2xl object-cover ${
-                            isProfitable ? 'border-emerald-500/50' : 'border-rose-500/50'
-                          }`}
+                          alt={customAssetName}
+                          className={`relative w-24 h-24 rounded-full border border-white/50 shadow-[0_0_10px_rgba(255,255,255,0.2)] object-cover`}
                         />
                       </div>
+                      )}
                       <div>
                         <h2 className="text-5xl font-black tracking-tight leading-none mb-2 drop-shadow-lg text-white">
-                          {data.assetName}
+                          {customAssetName}
                         </h2>
                         <span className={`inline-block px-4 py-1.5 rounded-full text-xl font-bold tracking-wider border backdrop-blur-md ${
                           isProfitable 
@@ -428,6 +430,35 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
                       hideValues ? 'translate-x-6' : 'translate-x-0'
                     }`} />
                   </button>
+                </div>
+
+                {/* Asset Name & Icon */}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                       Asset Name & Icon
+                    </label>
+                    <div className="flex gap-2">
+                       <input
+                        type="text"
+                        value={customAssetName}
+                        onChange={(e) => setCustomAssetName(e.target.value)}
+                        placeholder="e.g. BTC/USDT"
+                        className="flex-1 bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500"
+                      />
+                      <button
+                        onClick={() => setShowAssetIcon(!showAssetIcon)}
+                        className={`px-4 rounded-xl border-2 transition-all ${
+                          showAssetIcon
+                            ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400'
+                            : 'border-slate-700 bg-slate-800 text-slate-400'
+                        }`}
+                        title="Toggle Asset Icon"
+                      >
+                         <ImageIcon className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Username */}
