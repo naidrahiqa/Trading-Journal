@@ -203,7 +203,7 @@ export default function ShareablePnLCard({ data, onClose }: ShareablePnLCardProp
             {/* 2. Main Stats Grid */}
             <div className="bg-black/20 backdrop-blur-sm rounded-3xl p-6 border border-white/5 shadow-inner">
               <div className="text-center mb-6">
-                <h3 className="text-white/50 text-sm font-bold uppercase tracking-[0.3em]">Trade Result</h3>
+                <h3 className="text-white/50 text-sm font-bold uppercase tracking-[0.3em] pl-[0.3em]">Trade Result</h3>
               </div>
 
               {/* Grid: Entry/Exit if available */}

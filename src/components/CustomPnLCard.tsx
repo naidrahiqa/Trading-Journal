@@ -315,7 +315,7 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
 
                   {/* Main Content: PnL or Entry/Exit */}
                   <div className="text-center my-12">
-                    <p className="text-slate-300 font-bold text-2xl mb-8 uppercase tracking-[0.4em] drop-shadow-md">
+                    <p className="text-slate-300 font-bold text-2xl mb-8 uppercase tracking-[0.4em] pl-[0.4em] drop-shadow-md">
                       {hideValues ? 'TRADE RESULT' : 'NET PROFIT/LOSS'}
                     </p>
                     
