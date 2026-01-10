@@ -8,13 +8,14 @@
 
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { PlusCircle, BarChart3, LogOut } from 'lucide-react';
+import { PlusCircle, BarChart3, LogOut, CalendarDays } from 'lucide-react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/navigation';
 import TradingDashboard from '@/components/TradingDashboard';
 import EnhancedTradingSummary from '@/components/TradingSummary';
+import TradingCalendar from '@/components/TradingCalendar';
 
-type ActiveTab = 'add-trade' | 'summary';
+type ActiveTab = 'add-trade' | 'summary' | 'calendar';
 
 export default function MainDashboard() {
   const supabase = createClientComponentClient();
@@ -79,6 +80,17 @@ export default function MainDashboard() {
                 <BarChart3 className="w-4 h-4" />
                 <span className="hidden sm:inline">Dashboard</span>
               </button>
+              <button
+                onClick={() => setActiveTab('calendar')}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                  activeTab === 'calendar'
+                    ? 'bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-lg shadow-emerald-500/30'
+                    : 'text-slate-400 hover:text-white hover:bg-slate-800'
+                }`}
+              >
+                <CalendarDays className="w-4 h-4" />
+                <span className="hidden sm:inline">Calendar</span>
+              </button>
             </div>
 
             {/* Logout Button */}
@@ -95,27 +107,39 @@ export default function MainDashboard() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {activeTab === 'add-trade' ? (
-          <motion.div
-            key="add-trade"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-          >
-            <TradingDashboard />
-          </motion.div>
-        ) : (
-          <motion.div
-            key="summary"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.3 }}
-          >
-            <EnhancedTradingSummary key={refreshTrigger} />
-          </motion.div>
-        )}
+        <AnimatePresence mode="wait">
+          {activeTab === 'add-trade' ? (
+            <motion.div
+              key="add-trade"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <TradingDashboard />
+            </motion.div>
+          ) : activeTab === 'summary' ? (
+            <motion.div
+              key="summary"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <EnhancedTradingSummary key={refreshTrigger} />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="calendar"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <TradingCalendar />
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Footer */}
