@@ -108,245 +108,203 @@ export default function ShareablePnLCard({ data, onClose }: ShareablePnLCardProp
   };
 
   const isProfitable = data.netPnL >= 0;
-  const assetTypeLabel = data.assetType === 'crypto' ? 'CRYPTOCURRENCY' : 'SAHAM'; // Changed!
+  const assetTypeLabel = data.assetType === 'crypto' ? 'CRYPTO' : 'STOCK';
+  const orderTypeLabel = data.orderType ? data.orderType.toUpperCase() : null;
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4"
+      className="fixed inset-0 bg-black/95 backdrop-blur-md z-50 flex items-center justify-center p-4 overflow-y-auto"
       onClick={onClose}
     >
       <motion.div
-        initial={{ scale: 0.8, opacity: 0, y: 50 }}
+        initial={{ scale: 0.9, opacity: 0, y: 30 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.8, opacity: 0, y: 50 }}
+        exit={{ scale: 0.9, opacity: 0, y: 30 }}
         transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-        className="relative max-w-lg w-full"
+        className="relative max-w-2xl w-full my-8" // Increased max-width for better spacing
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute -top-16 right-0 text-white hover:text-emerald-400 transition-colors group"
+          className="absolute -top-12 right-0 text-slate-400 hover:text-white transition-colors"
         >
-          <div className="relative">
-            <X className="w-10 h-10" />
-            <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-          </div>
+          <X className="w-8 h-8" />
         </button>
 
-        {/* Card to be exported */}
+        {/* Card Component (To Be Exported) */}
         <div
           ref={cardRef}
-          className="relative overflow-hidden rounded-3xl shadow-2xl"
+          className="relative overflow-hidden rounded-[2rem] shadow-2xl bg-slate-900 border border-slate-800 text-white font-sans selection:bg-none"
+          // Inlining styles for html2canvas compatibility
           style={{
             background: isProfitable
-              ? 'linear-gradient(135deg, #064e3b 0%, #0f172a 50%, #064e3b 100%)'
-              : 'linear-gradient(135deg, #7f1d1d 0%, #0f172a 50%, #7f1d1d 100%)',
+              ? 'linear-gradient(145deg, #022c22 0%, #064e3b 40%, #065f46 100%)'
+              : 'linear-gradient(145deg, #450a0a 0%, #7f1d1d 40%, #991b1b 100%)',
           }}
         >
-          {/* Animated Background Gradient */}
-          <div className="absolute inset-0 opacity-30">
-            <div className={`absolute inset-0 bg-gradient-to-br ${
-              isProfitable 
-                ? 'from-emerald-500/40 via-transparent to-cyan-500/40' 
-                : 'from-rose-500/40 via-transparent to-pink-500/40'
-            } animate-pulse`}></div>
-          </div>
+          {/* Background Textures */}
+          <div className="absolute inset-0 opacity-20" style={{ 
+            backgroundImage: 'radial-gradient(circle at 50% 0%, rgba(255,255,255,0.2) 0%, transparent 60%)' 
+          }}></div>
+          
+          {/* Subtle noise texture or pattern could go here */}
 
-          {/* Glassmorphism overlay */}
-          <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-2xl"></div>
-
-          {/* Neon Glow Effect */}
-          <div className={`absolute inset-0 ${
-            isProfitable ? 'shadow-[0_0_100px_rgba(16,185,129,0.3)]' : 'shadow-[0_0_100px_rgba(244,63,94,0.3)]'
-          }`}></div>
-
-          {/* Content */}
-          <div className="relative p-10">
-            {/* Header - Asset Info */}
-            <div className="flex items-start justify-between mb-8">
-              <div className="flex items-center gap-4">
-                {/* Asset Logo - SVG Generated */}
-                <div className="relative group">
-                  <div className={`absolute inset-0 bg-gradient-to-r ${
-                    isProfitable ? 'from-emerald-500 to-cyan-500' : 'from-rose-500 to-pink-500'
-                  } rounded-2xl blur-xl opacity-75 group-hover:opacity-100 transition-opacity`}></div>
+          <div className="relative p-10 flex flex-col gap-8">
+            
+            {/* 1. Header Section: Asset & Platform */}
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-5">
+                {/* Asset Logo */}
+                <div className="relative">
+                  <div className={`absolute inset-0 rounded-2xl blur-lg opacity-60 ${
+                    isProfitable ? 'bg-emerald-400' : 'bg-rose-400'
+                  }`}></div>
                   <img 
-                    src={assetLogoUrl}
+                    src={assetLogoUrl} 
                     alt={data.assetName}
-                    className="relative w-20 h-20 rounded-2xl object-cover shadow-2xl"
+                    className="relative w-20 h-20 rounded-2xl object-cover shadow-lg border-2 border-white/10"
                   />
                 </div>
                 
+                {/* Asset Details */}
                 <div>
-                  <h2 className="text-3xl font-black text-white mb-1 tracking-tight">
+                  <h2 className="text-4xl font-black tracking-tight text-white leading-none mb-2">
                     {data.assetName}
                   </h2>
                   <div className="flex items-center gap-2">
-                    <span className={`px-3 py-1 rounded-full text-xs font-bold tracking-wider ${
-                      isProfitable 
-                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/50' 
-                        : 'bg-rose-500/20 text-rose-300 border border-rose-500/50'
-                    }`}>
+                    <span className="px-2.5 py-0.5 rounded-md bg-white/10 text-white/90 text-xs font-bold tracking-wider uppercase backdrop-blur-md border border-white/10">
                       {assetTypeLabel}
                     </span>
+                    {orderTypeLabel && (
+                      <span className={`px-2.5 py-0.5 rounded-md text-xs font-bold tracking-wider uppercase backdrop-blur-md border ${
+                        data.orderType === 'long' 
+                          ? 'bg-emerald-500/20 text-emerald-200 border-emerald-500/30' 
+                          : 'bg-rose-500/20 text-rose-200 border-rose-500/30'
+                      }`}>
+                        {orderTypeLabel}
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
 
-              {/* Platform Badge */}
-              <div className="text-right">
-                <div className="text-4xl mb-2">{getBrokerLogo(data.platformName.toLowerCase()) || data.platformLogo}</div>
-                <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider">
-                  {data.platformName}
+              {/* Platform Logo */}
+              <div className="text-right opacity-90">
+                <div className="text-5xl drop-shadow-lg filter">
+                  {getBrokerLogo(data.platformName.toLowerCase()) || data.platformLogo}
+                </div>
+              </div>
+            </div>
+
+            {/* 2. Main Stats Grid */}
+            <div className="bg-black/20 backdrop-blur-sm rounded-3xl p-6 border border-white/5 shadow-inner">
+              <div className="text-center mb-6">
+                <h3 className="text-white/50 text-sm font-bold uppercase tracking-[0.3em]">Trade Result</h3>
+              </div>
+
+              {/* Grid: Entry/Exit if available */}
+              {(data.entryPrice && data.exitPrice) && (
+                <div className="grid grid-cols-2 gap-4 mb-8">
+                  <div className="bg-white/5 rounded-2xl p-4 text-center border border-white/5">
+                    <p className="text-white/40 text-xs font-bold uppercase tracking-wider mb-1">Entry Price</p>
+                    <p className="text-xl md:text-2xl font-bold font-mono text-white">
+                      {formatCurrency(data.entryPrice, data.assetType)}
+                    </p>
+                  </div>
+                  <div className="bg-white/5 rounded-2xl p-4 text-center border border-white/5">
+                    <p className="text-white/40 text-xs font-bold uppercase tracking-wider mb-1">Exit Price</p>
+                    <p className="text-xl md:text-2xl font-bold font-mono text-white">
+                      {formatCurrency(data.exitPrice, data.assetType)}
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* PnL & ROI Centerpiece */}
+              <div className="flex flex-col items-center justify-center gap-4">
+                {/* Net PnL */}
+                <div className="relative">
+                   <div className={`absolute inset-0 blur-3xl opacity-40 ${
+                      isProfitable ? 'bg-emerald-400' : 'bg-rose-400'
+                   }`}></div>
+                   <div className={`relative text-6xl md:text-7xl font-black tracking-tighter flex items-center gap-3 ${
+                      isProfitable 
+                        ? 'text-transparent bg-clip-text bg-gradient-to-br from-white via-emerald-100 to-emerald-300 drop-shadow-[0_2px_10px_rgba(16,185,129,0.5)]'
+                        : 'text-transparent bg-clip-text bg-gradient-to-br from-white via-rose-100 to-rose-300 drop-shadow-[0_2px_10px_rgba(244,63,94,0.5)]'
+                   }`}>
+                      {isProfitable ? '+' : ''}{formatCurrency(data.netPnL, data.assetType)}
+                   </div>
+                </div>
+
+                {/* ROI Badge */}
+                <div className={`px-6 py-2 rounded-full border-2 ${
+                  isProfitable 
+                    ? 'bg-emerald-500/20 border-emerald-400/50 text-emerald-300 shadow-[0_0_20px_rgba(16,185,129,0.3)]' 
+                    : 'bg-rose-500/20 border-rose-400/50 text-rose-300 shadow-[0_0_20px_rgba(244,63,94,0.3)]'
+                }`}>
+                  <span className="text-2xl font-bold">
+                    {isProfitable ? 'ROI +' : 'ROI '}{formatPercentage(data.roi)}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* 3. Footer Section */}
+            <div className="flex items-end justify-between pt-2 border-t border-white/10">
+              <div>
+                <p className="text-white/40 text-xs font-bold uppercase tracking-wider mb-1">Tanggal</p>
+                <p className="text-white font-medium">
+                  {new Date(data.timestamp).toLocaleDateString('id-ID', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
+                  })}
                 </p>
               </div>
-            </div>
 
-            {/* Divider with Sparkles */}
-            <div className="relative h-px bg-gradient-to-r from-transparent via-slate-600 to-transparent mb-8">
-              <Sparkles className={`absolute left-1/2 -translate-x-1/2 -translate-y-1/2 w-5 h-5 ${
-                isProfitable ? 'text-emerald-400' : 'text-rose-400'
-              }`} />
-            </div>
-
-            {/* Net PnL - MEGA DISPLAY */}
-            <div className="mb-8 text-center">
-              <p className="text-slate-400 text-sm mb-3 uppercase tracking-[0.3em] font-bold">
-                NET PROFIT/LOSS
-              </p>
-              <div className="relative">
-                {/* Glow effect behind text */}
-                <div className={`absolute inset-0 blur-3xl opacity-50 ${
-                  isProfitable ? 'bg-emerald-500' : 'bg-rose-500'
-                }`}></div>
-                
-                <div className={`relative text-7xl font-black mb-3 flex items-center justify-center gap-3 ${
-                  isProfitable ? 'text-emerald-400' : 'text-rose-400'
-                }`} style={{
-                  textShadow: isProfitable 
-                    ? '0 0 40px rgba(16,185,129,0.8)' 
-                    : '0 0 40px rgba(244,63,94,0.8)'
-                }}>
-                  {isProfitable ? (
-                    <TrendingUp className="w-16 h-16" strokeWidth={3} />
-                  ) : (
-                    <TrendingDown className="w-16 h-16" strokeWidth={3} />
-                  )}
-                  <span>{formatCurrency(data.netPnL, data.assetType)}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* ROI Badge - BIGGER */}
-            <div className="flex justify-center mb-10">
-              <div className="relative group">
-                {/* Animated ring */}
-                <div className={`absolute inset-0 rounded-full bg-gradient-to-r ${
-                  isProfitable 
-                    ? 'from-emerald-500 via-cyan-500 to-emerald-500' 
-                    : 'from-rose-500 via-pink-500 to-rose-500'
-                } blur-lg opacity-75 group-hover:opacity-100 transition-opacity animate-pulse`}></div>
-                
-                <div className={`relative px-8 py-4 rounded-full border-4 ${
-                  isProfitable
-                    ? 'bg-emerald-500/10 border-emerald-400 backdrop-blur-sm'
-                    : 'bg-rose-500/10 border-rose-400 backdrop-blur-sm'
-                }`}>
-                  <div className="flex items-center gap-3">
-                    <span className={`text-4xl font-black ${
-                      isProfitable ? 'text-emerald-300' : 'text-rose-300'
-                    }`}>
-                      {isProfitable ? '+' : ''}{formatPercentage(data.roi)}
-                    </span>
-                    <span className="text-slate-300 text-lg font-bold">ROI</span>
+              <div className="text-right">
+                <div className="flex flex-col items-end">
+                  <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest mb-1">Jurnal Trading Ku</p>
+                  <div className="flex items-center gap-2 text-white/80">
+                    <span className="text-sm">@username</span> 
+                    {/* Note: In a real app, pass username via props */}
                   </div>
                 </div>
               </div>
             </div>
-
-            {/* Footer */}
-            <div className="pt-6 border-t border-slate-700/50">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-slate-500 text-xs mb-1 uppercase tracking-wider">Tanggal</p>
-                  <p className="text-slate-300 font-semibold">
-                    {new Date(data.timestamp).toLocaleDateString('id-ID', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric'
-                    })}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl">📊</span>
-                    <span className={`text-lg font-black bg-gradient-to-r ${
-                      isProfitable 
-                        ? 'from-emerald-400 to-cyan-400' 
-                        : 'from-rose-400 to-pink-400'
-                    } bg-clip-text text-transparent`}>
-                      Trading Journal
-                    </span>
-                  </div>
-                  <p className="text-slate-500 text-xs mt-1">Premium Analytics</p>
-                </div>
-              </div>
-            </div>
+            
           </div>
-
-          {/* Decorative corner gradients */}
-          <div className={`absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br ${
-            isProfitable ? 'from-emerald-500/30' : 'from-rose-500/30'
-          } to-transparent rounded-full blur-3xl`}></div>
-          <div className={`absolute -bottom-20 -left-20 w-64 h-64 bg-gradient-to-tr ${
-            isProfitable ? 'from-cyan-500/30' : 'from-pink-500/30'
-          } to-transparent rounded-full blur-3xl`}></div>
         </div>
 
-        {/* Action Buttons - ENHANCED */}
-        <div className="flex gap-4 mt-8">
+        {/* Action Buttons */}
+        <div className="flex gap-4 mt-8 px-4">
           <motion.button
-            whileHover={{ scale: 1.05, y: -2 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={handleShare}
             disabled={isExporting}
-            className="flex-1 relative group"
+            className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 hover:shadow-emerald-500/25 transition-all disabled:opacity-50"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-2xl blur-lg opacity-75 group-hover:opacity-100 transition-opacity"></div>
-            <div className="relative bg-gradient-to-r from-emerald-500 to-cyan-500 text-white py-5 rounded-2xl font-black text-lg flex items-center justify-center gap-3 shadow-2xl">
-              <Share2 className="w-6 h-6" />
-              {isExporting ? 'Generating...' : 'SHARE'}
-            </div>
+            <Share2 className="w-5 h-5" />
+            {isExporting ? 'Generating...' : 'Share Image'}
           </motion.button>
           
           <motion.button
-            whileHover={{ scale: 1.05, y: -2 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={handleDownload}
             disabled={isExporting}
-            className="flex-1 relative group"
+            className="flex-1 bg-slate-800 text-white font-bold py-4 rounded-xl shadow-lg flex items-center justify-center gap-2 border border-slate-700 hover:bg-slate-700 transition-all disabled:opacity-50"
           >
-            <div className="absolute inset-0 bg-slate-700 rounded-2xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity"></div>
-            <div className="relative bg-slate-800 border-2 border-slate-600 text-white py-5 rounded-2xl font-black text-lg flex items-center justify-center gap-3 shadow-2xl hover:border-slate-500 transition-colors">
-              <Download className="w-6 h-6" />
-              DOWNLOAD
-            </div>
+            <Download className="w-5 h-5" />
+            Download
           </motion.button>
         </div>
 
-        {/* Pro Tip */}
-        <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="text-center text-slate-500 text-sm mt-6"
-        >
-          💡 <span className="text-slate-400">Pro tip:</span> Share your wins, learn from losses!
-        </motion.p>
       </motion.div>
     </motion.div>
   );

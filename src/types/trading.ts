@@ -185,6 +185,7 @@ export interface ShareableCardData {
   entryPrice?: number;
   exitPrice?: number;
   assetType: AssetType;
+  orderType?: OrderType; // For displaying Long/Short
   timestamp: string;
 }
 

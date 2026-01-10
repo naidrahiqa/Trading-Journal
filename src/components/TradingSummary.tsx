@@ -186,6 +186,7 @@ export default function EnhancedTradingSummary() {
       entryPrice: trade.entry_price,
       exitPrice: trade.exit_price,
       assetType: trade.asset_type,
+      orderType: trade.order_type,
       timestamp: trade.created_at,
     };
     setShareCardData(cardData);
