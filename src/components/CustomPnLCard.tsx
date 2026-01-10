@@ -16,7 +16,7 @@ import {
 import html2canvas from 'html2canvas';
 import { ShareableCardData } from '@/types/trading';
 import { formatCurrency, formatPercentage } from '@/utils/tradingCalculations';
-import { getAssetLogo, getBrokerLogo } from '@/utils/logoUtils';
+import { getAssetLogo, getBrokerLogo, getBrokerLogoUrl } from '@/utils/logoUtils';
 
 interface CustomPnLCardProps {
   data: ShareableCardData;
@@ -53,6 +53,8 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
   const [customBgImage, setCustomBgImage] = useState<string | null>(null);
   const [showCustomize, setShowCustomize] = useState(true);
   const [hideValues, setHideValues] = useState(false);
+  const [brokerLogoUrl, setBrokerLogoUrl] = useState<string>('');
+  const [textColor, setTextColor] = useState<'white' | 'black'>('white');
 
   // Load user profile
   useEffect(() => {
@@ -66,11 +68,24 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
         const url = await getAssetLogo(data.assetName, data.assetType);
         setAssetLogoUrl(url);
       } catch (error) {
-        console.error('Error fetching logo:', error);
+        console.error('Error fetching asset logo:', error);
       }
     };
     fetchLogo();
   }, [data.assetName, data.assetType]);
+
+  // Fetch Broker Logo
+  useEffect(() => {
+    const fetchBroker = async () => {
+      try {
+        const url = await getBrokerLogoUrl(data.platformName);
+        setBrokerLogoUrl(url);
+      } catch (error) {
+        setBrokerLogoUrl(getBrokerLogo(data.platformName)); // Fallback to emoji
+      }
+    };
+    fetchBroker();
+  }, [data.platformName]);
 
   const loadUserProfile = async () => {
     try {
@@ -87,6 +102,8 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
     setUsername(value);
     localStorage.setItem('tradingJournalUsername', value);
   };
+  
+  // ... (rest of handlers safely skipped as they are unchanged)
 
   const handleBackgroundUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -98,6 +115,8 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
     };
     reader.readAsDataURL(file);
   };
+
+  // ... (export logic can remain, I will focus on the return render)
 
   const handleExport = async (action: 'download' | 'share') => {
     if (!cardRef.current) return;
@@ -135,7 +154,8 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
             try {
               await navigator.share({
                 files: [file],
-                title: `${data.assetName} - ${formatCurrency(data.netPnL, data.assetType)}`,
+                title: `${data.assetName} - ${data.netPnL >= 0 ? 'PROFIT' : 'LOSS'}`,
+                text: `Cek profit ${data.assetName} saya!`,
               });
             } catch (err) {
               downloadBlob(blob);
@@ -241,31 +261,55 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
                 <div className="relative h-full flex flex-col justify-between p-12">
                   {/* Header */}
                   <div className="flex items-start justify-between">
+                    {/* Asset Logo & Info */}
                     <div className="flex items-center gap-6">
-                      <img 
-                        src={assetLogoUrl}
-                        alt={data.assetName}
-                        className="w-24 h-24 rounded-3xl shadow-2xl"
-                      />
+                      <div className="relative">
+                        {/* Circle Background for Asset */}
+                        <div className={`absolute inset-0 rounded-full blur-md opacity-50 ${
+                          isProfitable ? 'bg-emerald-500' : 'bg-rose-500'
+                        }`}></div>
+                        <img 
+                          src={assetLogoUrl}
+                          alt={data.assetName}
+                          className={`relative w-24 h-24 rounded-full border-4 shadow-2xl object-cover ${
+                            isProfitable ? 'border-emerald-500/50' : 'border-rose-500/50'
+                          }`}
+                        />
+                      </div>
                       <div>
-                        <h2 className="text-5xl font-black text-white tracking-tight mb-2">
+                        <h2 className={`text-5xl font-black tracking-tight leading-none mb-2 drop-shadow-lg ${textColor === 'white' ? 'text-white' : 'text-slate-900'}`}>
                           {data.assetName}
                         </h2>
-                        <span className={`px-4 py-2 rounded-full text-2xl font-bold tracking-wider border ${
+                        <span className={`inline-block px-4 py-1.5 rounded-full text-xl font-bold tracking-wider border backdrop-blur-md ${
                           isProfitable 
-                            ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' 
-                            : 'bg-rose-500/20 text-rose-300 border-rose-500/30'
-                        }`}>
+                            ? 'bg-emerald-500/20 text-emerald-600 border-emerald-500/30' 
+                            : 'bg-rose-500/20 text-rose-600 border-rose-500/30'
+                        } ${textColor === 'white' ? '' : 'border-opacity-50'}`}>
                           {assetTypeLabel}
                         </span>
                       </div>
                     </div>
-                    <div className="text-7xl drop-shadow-lg">{getBrokerLogo(data.platformName.toLowerCase())}</div>
+
+                    {/* Broker Logo - Blue Circle */}
+                    <div className="relative">
+                       <div className="absolute inset-0 bg-blue-500 rounded-full blur-md opacity-40"></div>
+                       <div className="relative w-24 h-24 rounded-full bg-white/20 backdrop-blur-md border-2 border-blue-400/30 flex items-center justify-center overflow-hidden shadow-xl">
+                          {brokerLogoUrl && brokerLogoUrl.startsWith('http') ? (
+                            <img 
+                              src={brokerLogoUrl} 
+                              alt={data.platformName} 
+                              className="w-16 h-16 object-contain"
+                            />
+                          ) : (
+                            <span className="text-5xl">{getBrokerLogo(data.platformName.toLowerCase())}</span>
+                          )}
+                       </div>
+                    </div>
                   </div>
 
                   {/* Main Content: PnL or Entry/Exit */}
                   <div className="text-center my-12">
-                    <p className="text-slate-300 font-bold text-2xl mb-8 uppercase tracking-[0.4em] drop-shadow-md">
+                    <p className={`font-bold text-2xl mb-8 uppercase tracking-[0.4em] drop-shadow-md ${textColor === 'white' ? 'text-slate-300' : 'text-slate-800'}`}>
                       {hideValues ? 'TRADE RESULT' : 'NET PROFIT/LOSS'}
                     </p>
                     
@@ -302,18 +346,18 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
                         : 'bg-rose-500/20 border-rose-400'
                     }`}>
                       <span className={`text-6xl font-black tracking-tight ${
-                        isProfitable ? 'text-white' : 'text-white'
-                      }`} style={{ textShadow: isProfitable ? '0 0 30px rgba(52, 211, 153, 0.6)' : '0 0 30px rgba(244, 63, 94, 0.6)' }}>
+                        textColor === 'white' ? 'text-white' : 'text-slate-900'
+                      }`} style={{ textShadow: isProfitable ? '0 0 30px rgba(52, 211, 153, 0.4)' : '0 0 30px rgba(244, 63, 94, 0.4)' }}>
                         {isProfitable ? '+' : ''}{formatPercentage(data.roi)} ROI
                       </span>
                     </div>
                   </div>
 
                   {/* Footer */}
-                  <div className="flex items-end justify-between border-t border-white/10 pt-8">
+                  <div className={`flex items-end justify-between border-t pt-8 ${textColor === 'white' ? 'border-white/10' : 'border-black/10'}`}>
                     <div>
-                      <p className="text-slate-400 font-bold text-xl mb-2 tracking-widest">TANGGAL</p>
-                      <p className="text-white font-bold text-3xl">
+                      <p className={`font-bold text-xl mb-2 tracking-widest ${textColor === 'white' ? 'text-slate-400' : 'text-slate-600'}`}>TANGGAL</p>
+                      <p className={`font-bold text-3xl ${textColor === 'white' ? 'text-white' : 'text-slate-900'}`}>
                         {new Date(data.timestamp).toLocaleDateString('id-ID', {
                           day: 'numeric',
                           month: 'long',
@@ -323,11 +367,11 @@ export default function CustomPnLCard({ data, onClose }: CustomPnLCardProps) {
                     </div>
                     <div className="text-right">
                       {username && (
-                        <p className="text-emerald-400 font-black text-4xl mb-2 drop-shadow-lg">@{username}</p>
+                        <p className={`font-black text-4xl mb-2 drop-shadow-lg ${textColor === 'white' ? 'text-emerald-400' : 'text-emerald-600'}`}>@{username}</p>
                       )}
                       <div className="flex items-center gap-3 justify-end opacity-80">
-                        <Sparkles className="w-8 h-8 text-white" />
-                        <span className="text-2xl font-bold text-white tracking-wide">Trading Journal</span>
+                        <Sparkles className={`w-8 h-8 ${textColor === 'white' ? 'text-white' : 'text-slate-900'}`} />
+                        <span className={`text-2xl font-bold tracking-wide ${textColor === 'white' ? 'text-white' : 'text-slate-900'}`}>Trading Journal</span>
                       </div>
                     </div>
                   </div>
