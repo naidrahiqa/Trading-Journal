@@ -26,6 +26,7 @@ import { getPlatformById } from '@/config/platformFees';
 import CustomPnLCard from './CustomPnLCard';
 import MistakeCostWidget from './MistakeCostWidget';
 import TradingHoursWidget from './TradingHoursWidget';
+import PsychologyAnalysisWidget from './PsychologyWidget';
 import { subDays, subMonths, isAfter, parseISO } from 'date-fns';
 
 // ==================== TIMEFRAME OPTIONS ====================
@@ -517,6 +518,7 @@ function KeceAbisTradeGrid({
               <button
                 onClick={() => onShareTrade(trade)}
                 className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                title="Share Trade"
               >
                 <Share2 className="w-4 h-4 text-slate-400 hover:text-white" />
               </button>
@@ -531,10 +533,10 @@ function KeceAbisTradeGrid({
               </div>
             </div>
 
-            {/* ROI Badge */}
-            <div className="mb-4">
+            {/* ROI & Tags */}
+            <div className="mb-4 flex flex-wrap gap-2">
               <span
-                className={`inline-block px-4 py-2 rounded-full text-sm font-bold ${
+                className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
                   isProfitable
                     ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50'
                     : 'bg-rose-500/20 text-rose-400 border border-rose-500/50'
@@ -542,6 +544,12 @@ function KeceAbisTradeGrid({
               >
                 {isProfitable ? '+' : ''}{formatPercentage(roi)} ROI
               </span>
+              {/* Psychology Tags */}
+              {trade.tags && trade.tags.map(tag => (
+                 <span key={tag} className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-purple-500/10 text-purple-300 border border-purple-500/20">
+                    {tag}
+                 </span>
+              ))}
             </div>
 
             {/* Trade Details */}

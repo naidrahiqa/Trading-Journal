@@ -377,18 +377,57 @@ export default function TradingDashboard() {
                   </div>
                 </div>
 
-                {/* Notes */}
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Notes (Optional)
-                  </label>
-                  <textarea
-                    value={formData.notes}
-                    onChange={(e) => handleInputChange('notes', e.target.value)}
-                    placeholder="Add any additional notes about this trade..."
-                    rows={3}
-                    className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all resize-none"
-                  />
+                {/* Trading Psychology & Notes Section */}
+                <div className="space-y-4">
+                  <div className="border-t border-slate-800 pt-6"></div>
+                  <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                    🧠 Trading Psychology
+                  </h3>
+                  
+                  {/* Emotions Chips */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-3">
+                      Emotions Felt
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {['Calm', 'Fear', 'Greed', 'FOMO', 'Revenge', 'Disciplined', 'Patience', 'Impulsive'].map((emotion) => {
+                        const isSelected = formData.tags.includes(emotion);
+                        return (
+                          <button
+                            key={emotion}
+                            type="button"
+                            onClick={() => {
+                              const newTags = isSelected
+                                ? formData.tags.filter(t => t !== emotion)
+                                : [...formData.tags, emotion];
+                              handleInputChange('tags', newTags as any); // Cast because handleInputChange expects string usually, but we need to update our state handler logic
+                            }}
+                            className={`px-4 py-2 rounded-full text-sm font-bold transition-all border-2 ${
+                              isSelected
+                                ? 'bg-purple-500 text-white border-purple-400 shadow-[0_0_10px_rgba(168,85,247,0.4)]'
+                                : 'bg-slate-800 text-slate-400 border-slate-700 hover:border-purple-500/50 hover:text-purple-300'
+                            }`}
+                          >
+                            {emotion}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Notes / Lessons */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                      Lesson Learned / Notes
+                    </label>
+                    <textarea
+                      value={formData.notes}
+                      onChange={(e) => handleInputChange('notes', e.target.value)}
+                      placeholder="What did you learn from this trade?"
+                      rows={3}
+                      className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all resize-none"
+                    />
+                  </div>
                 </div>
 
                 {/* Submit Button */}
